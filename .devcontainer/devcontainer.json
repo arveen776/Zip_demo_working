@@ -1,0 +1,7 @@
+{
+  "name": "Node 18",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:0-18",
+  "forwardPorts": [4000],
+  "postCreateCommand": "cd server && npm install",
+  "remoteUser": "vscode"
+}
