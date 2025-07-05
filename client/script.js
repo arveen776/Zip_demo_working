@@ -1,4 +1,4 @@
-const apiUrl = 'http://localhost:4000/api/quotes';
+const apiUrl = '/api/quotes';
 
 if (location.pathname.endsWith('employee.html')) {
   // Employee page logic
