@@ -1,3 +1,5 @@
+// server/index.js
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -10,83 +12,109 @@ const prisma = new PrismaClient();
 // Create Express app
 const app = express();
 
-// Middleware
+// ─── MIDDLEWARE ────────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(bodyParser.json());
-// Serve static files from client folder
 app.use(express.static(path.join(__dirname, '../client')));
 
-// ─── QUOTE ENDPOINTS ───────────────────────────────────────────────────────────
-
-// Employee: Create a new quote
+// ─── CREATE QUOTE ─────────────────────────────────────────────────────────────
 app.post('/api/quotes', async (req, res) => {
+  console.log('Incoming quote payload:', JSON.stringify(req.body));
+  const { customer, items } = req.body;
+
+  // Validate payload
+  if (!customer || !Array.isArray(items) || items.length === 0) {
+    return res
+      .status(400)
+      .json({ error: 'Payload must include customer and non-empty items array' });
+  }
+
   try {
-    const { name, desc, qty } = req.body;
-    // Ensure service exists (default cost = 0)
-    const service = await prisma.service.upsert({
-      where: { name: desc },
-      update: {},
-      create: { name: desc, description: desc, cost: 0 }
-    });
-
-    // Create the quote and its line item
+    // Create the quote header
     const quote = await prisma.quote.create({
-      data: {
-        employeeName: name,
-        quoteItems: {
-          create: {
-            service: { connect: { id: service.id } },
-            qty,
-            lineTotal: service.cost * qty
-          }
-        }
-      },
-      include: { quoteItems: true }
+      data: { employeeName: customer }
     });
 
-    // Calculate total
-    const total = quote.quoteItems.reduce((sum, item) => sum + item.lineTotal, 0);
-    res.json({ id: quote.id, total });
+    let total = 0;
+    // Insert each line item
+    for (const line of items) {
+      const serviceId = Number(line.serviceId);
+      const qty = Number(line.qty);
+      if (!serviceId || qty < 1) continue;
 
+      // Fetch service cost
+      const service = await prisma.service.findUnique({ where: { id: serviceId } });
+      if (!service) {
+        console.warn(`Service ID ${serviceId} not found, skipping`);
+        continue;
+      }
+
+      const lineTotal = service.cost * qty;
+      total += lineTotal;
+
+      await prisma.quoteItem.create({
+        data: {
+          quoteId: quote.id,
+          serviceId,
+          qty,
+          lineTotal
+        }
+      });
+    }
+
+    return res.json({ id: quote.id, total });
   } catch (error) {
     console.error('Error creating quote:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Manager: Fetch all quotes
+// ─── FETCH QUOTES ─────────────────────────────────────────────────────────────
 app.get('/api/quotes', async (req, res) => {
   try {
     const quotes = await prisma.quote.findMany({
       include: {
-        quoteItems: {
-          include: { service: true }
-        }
-      }
+        quoteItems: { include: { service: true } }
+      },
+      orderBy: { createdAt: 'desc' }
     });
-    res.json(quotes);
+    return res.json(quotes);
   } catch (error) {
     console.error('Error fetching quotes:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// ─── SERVICE CATALOG CRUD ───────────────────────────────────────────────────────
+// ─── CLEAR ALL QUOTES ──────────────────────────────────────────────────────────
+app.delete('/api/quotes', async (req, res) => {
+  try {
+    // 1) Remove every line-item
+    await prisma.quoteItem.deleteMany();
+    // 2) Then remove every quote
+    await prisma.quote.deleteMany();
+    return res.sendStatus(204);
+  } catch (error) {
+    console.error('Error clearing quotes:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
-// List all services
+// ─── SERVICE CRUD ──────────────────────────────────────────────────────────────
+
+// List services
 app.get('/api/services', async (req, res) => {
   try {
     const services = await prisma.service.findMany({
       orderBy: { name: 'asc' }
     });
-    res.json(services);
+    return res.json(services);
   } catch (error) {
     console.error('Error fetching services:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Create a new service
+// Create service
 app.post('/api/services', async (req, res) => {
   try {
     const { name, description, cost } = req.body;
@@ -96,18 +124,18 @@ app.post('/api/services', async (req, res) => {
     const service = await prisma.service.create({
       data: { name, description, cost: parseFloat(cost) }
     });
-    res.status(201).json(service);
+    return res.status(201).json(service);
   } catch (error) {
     console.error('Error creating service:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Update an existing service
+// Update service
 app.put('/api/services/:id', async (req, res) => {
-  const id = Number(req.params.id);
-  const { name, description, cost } = req.body;
   try {
+    const id = Number(req.params.id);
+    const { name, description, cost } = req.body;
     const service = await prisma.service.update({
       where: { id },
       data: {
@@ -116,27 +144,21 @@ app.put('/api/services/:id', async (req, res) => {
         cost: cost != null ? parseFloat(cost) : undefined
       }
     });
-    res.json(service);
+    return res.json(service);
   } catch (error) {
     console.error('Error updating service:', error);
-    res.status(404).json({ error: 'Service not found' });
+    return res.status(404).json({ error: 'Service not found' });
   }
 });
 
-// Delete a service (cascade‐style)
+// Delete service + cascade
 app.delete('/api/services/:id', async (req, res) => {
-  const id = Number(req.params.id);
   try {
-    // 1) Remove all quoteItems that reference this service
-    await prisma.quoteItem.deleteMany({
-      where: { serviceId: id }
-    });
-
-    // 2) Now delete the service itself
-    await prisma.service.delete({
-      where: { id }
-    });
-
+    const id = Number(req.params.id);
+    // Remove dependent quoteItems
+    await prisma.quoteItem.deleteMany({ where: { serviceId: id } });
+    // Delete the service
+    await prisma.service.delete({ where: { id } });
     return res.sendStatus(204);
   } catch (error) {
     console.error('Error deleting service:', error);
@@ -144,9 +166,6 @@ app.delete('/api/services/:id', async (req, res) => {
   }
 });
 
-
-// ─── START SERVER ─────────────────────────────────────────────────────────────
+// ─── START SERVER ───────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
