@@ -2,21 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manager Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Manager Dashboard</h1>
-  <table id="quotes-table">
-    <thead>
-      <tr>
-        <th>ID</th><th>Name</th><th>Desc</th><th>Qty</th><th>Total</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <div id="summary"></div>
+
+  <!-- Quotes Table -->
+  <section>
+    <h2>All Quotes</h2>
+    <table id="quotes-table">
+      <thead>
+        <tr>
+          <th>Quote ID</th>
+          <th>Employee</th>
+          <th>Service</th>
+          <th>Qty</th>
+          <th>Line Total</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div id="summary"></div>
+  </section>
+
+  <!-- Service Catalog Management -->
+  <section>
+    <h2>Service Catalog</h2>
+
+    <!-- New Service Form -->
+    <form id="service-form">
+      <label>
+        Name
+        <input type="text" id="service-name" required />
+      </label>
+      <label>
+        Description
+        <input type="text" id="service-desc" />
+      </label>
+      <label>
+        Cost ($)
+        <input type="number" id="service-cost" step="0.01" min="0" required />
+      </label>
+      <button type="submit">Add Service</button>
+    </form>
+
+    <!-- Existing Services List -->
+    <table id="services-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Cost</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
   <script src="script.js"></script>
 </body>
 </html>

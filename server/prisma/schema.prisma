@@ -1,0 +1,33 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Service {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  description String?
+  cost        Float
+  quoteItems  QuoteItem[]
+}
+
+model Quote {
+  id           Int         @id @default(autoincrement())
+  employeeName String
+  createdAt    DateTime    @default(now())
+  quoteItems   QuoteItem[]
+}
+
+model QuoteItem {
+  id        Int     @id @default(autoincrement())
+  quote     Quote   @relation(fields: [quoteId], references: [id])
+  quoteId   Int
+  service   Service @relation(fields: [serviceId], references: [id])
+  serviceId Int
+  qty       Int
+  lineTotal Float
+}

@@ -1,26 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Employee Quote</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- Ensure paths are relative to this file -->
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <h1>Request a Quote</h1>
+
   <form id="quote-form">
-    <label>Your Name
-      <input type="text" id="name" required>
+    <label for="employee-name">
+      Your Name
+      <input type="text" id="employee-name" name="employeeName" required />
     </label>
-    <label>Item Description
-      <input type="text" id="desc" required>
+
+    <label for="service-select">
+      Service
+      <select id="service-select" name="service" required>
+        <option value="">-- Select service --</option>
+      </select>
     </label>
-    <label>Quantity
-      <input type="number" id="qty" min="1" required>
+
+    <label for="item-qty">
+      Quantity
+      <input type="number" id="item-qty" name="quantity" min="1" value="1" required />
     </label>
+
     <button type="submit">Submit</button>
   </form>
+
   <div id="quote-result"></div>
-  <script src="script.js"></script>
+
+  <!-- Load script after DOM for proper element access -->
+  <script src="./script.js"></script>
 </body>
 </html>
