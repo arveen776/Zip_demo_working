@@ -2,35 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Employee Quote</title>
-  <link rel="stylesheet" href="./style.css" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  />
+  <title>New Quote</title>
+  <!-- in <head> above your style.css link -->
+<link
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+  integrity="sha512-MNH0TkN1Ua4+Rz5q7TnAyzmP4PzQRgCmGnd3VHnYHbTLavsIE6UjPSxIutW35xRju1e+Qoaxl5FzT5c+9zY7RQ=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+/>
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Navigation -->
+  <nav style="margin-bottom:1rem;">
+    <a href="customers.html">Customers</a> |
+    <a href="employee.html">New Quote</a> |
+    <a href="manager.html">Manager</a>
+  </nav>
+
   <h1>Request a Quote</h1>
 
-  <label>
-    Customer Name
-    <input type="text" id="employee-name" required />
+  <!-- 1) Customer Selector & Profile -->
+  <label style="display:block; margin-bottom:0.75rem;">
+    Customer<br/>
+    <select id="customer-select" required>
+      <option value="">-- Select customer --</option>
+    </select>
   </label>
 
-  <table id="quote-lines">
+  <div
+    id="customer-profile"
+    style="display:none; border:1px solid #ccc; padding:1rem; margin-bottom:1rem;"
+  >
+    <h3 id="profile-name"></h3>
+    <p><strong>Phone:</strong> <span id="profile-phone"></span></p>
+    <p><strong>Address:</strong> <span id="profile-address"></span></p>
+    <p><strong>Notes:</strong> <span id="profile-notes"></span></p>
+  </div>
+
+  <!-- 2) Quote Label -->
+  <label style="display:block; margin-bottom:0.75rem;">
+    Quote label<br/>
+    <input
+      type="text"
+      id="quote-label"
+      placeholder="Enter quote label"
+      required
+    />
+  </label>
+
+  <!-- 3) Multi-Line Service Table -->
+  <table
+    id="quote-lines"
+    style="width:100%; border-collapse:collapse; margin-bottom:0.75rem;"
+  >
     <thead>
-      <tr>
-        <th>Service</th>
-        <th>Qty</th>
-        <th></th>
+      <tr style="background:#f8f8f8;">
+        <th style="border:1px solid #ddd; padding:0.5rem;">Service</th>
+        <th style="border:1px solid #ddd; padding:0.5rem;">Qty</th>
+        <th style="border:1px solid #ddd; padding:0.5rem;"></th>
       </tr>
     </thead>
     <tbody>
-      <!-- JS will inject rows here -->
+      <!-- JS will inject at least one row here -->
     </tbody>
   </table>
 
-  <button id="add-line" type="button">+ Add Service</button>
-  <button id="submit-quote" type="button">Submit Quote</button>
+  <button id="add-line" type="button" style="margin-right:0.5rem;">
+    + Add Service
+  </button>
+  <button id="submit-quote" type="button">
+    Submit Quote
+  </button>
 
-  <div id="quote-result"></div>
-  <script src="./script.js"></script>
+  <div
+    id="quote-result"
+    style="margin-top:1rem; font-weight:bold;"
+  ></div>
+
+  <script src="script.js"></script>
 </body>
 </html>

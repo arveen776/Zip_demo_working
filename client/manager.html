@@ -1,55 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Manager Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- in <head> above your style.css link -->
+<link
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+  integrity="sha512-MNH0TkN1Ua4+Rz5q7TnAyzmP4PzQRgCmGnd3VHnYHbTLavsIE6UjPSxIutW35xRju1e+Qoaxl5FzT5c+9zY7RQ=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+/>
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Navigation -->
+  <nav style="margin-bottom:1rem;">
+    <a href="customers.html">Customers</a> |
+    <a href="employee.html">New Quote</a> |
+    <a href="manager.html">Manager</a>
+  </nav>
+
   <h1>Manager Dashboard</h1>
 
-  <!-- Quotes Section: each quote bundle will render here -->
-  <section id="quotes-container">
-    <!-- script.js will populate this with grouped quotes -->
-  </section>
+  <!-- Filters + Clear -->
+  <div id="manager-controls" style="margin-bottom:1rem;">
+    <label>
+      Customer:
+      <select id="filter-customer">
+        <option value="">All Customers</option>
+      </select>
+    </label>
 
-  <button id="clear-quotes" style="margin-bottom:1rem; color:#fff; background:#c00; padding:0.5rem 1rem; border:none; border-radius:4px;">
-  🗑️ Clear All Quotes
-  </button>
+    <label style="margin-left:1rem;">
+      Quote Label:
+      <select id="filter-label">
+        <option value="">All Labels</option>
+      </select>
+    </label>
 
+    <button
+      id="clear-quotes"
+      style="margin-left:1rem; color:#fff; background:#c00; padding:0.5rem; border:none; border-radius:4px; cursor:pointer;"
+    >
+      🗑️ Clear All Quotes
+    </button>
+  </div>
 
+  <!-- Selected Customer Profile -->
+  <div
+    id="manager-customer-profile"
+    style="display:none; border:1px solid #ccc; padding:1rem; margin-bottom:1rem;"
+  >
+    <h2 id="mgr-profile-name"></h2>
+    <p><strong>Phone:</strong> <span id="mgr-profile-phone"></span></p>
+    <p><strong>Address:</strong> <span id="mgr-profile-address"></span></p>
+    <p><strong>Notes:</strong> <span id="mgr-profile-notes"></span></p>
+  </div>
 
-  <!-- Service Catalog Management -->
-  <section>
+  <!-- Quotes Container (JS will build this) -->
+  <div id="quotes-container"></div>
+
+  <!-- Service Catalog Management (unchanged) -->
+  <section id="services-section" style="margin-top:2rem;">
     <h2>Service Catalog</h2>
-
-    <!-- New Service Form -->
-    <form id="service-form">
-      <label>
-        Name<br>
+    <form id="service-form" style="margin-bottom:1rem;">
+      <label style="display:block; margin-bottom:0.5rem;">
+        Name<br />
         <input type="text" id="service-name" required />
       </label>
-      <label>
-        Description<br>
+      <label style="display:block; margin-bottom:0.5rem;">
+        Description<br />
         <input type="text" id="service-desc" />
       </label>
-      <label>
-        Cost ($)<br>
+      <label style="display:block; margin-bottom:0.5rem;">
+        Cost ($)<br />
         <input type="number" id="service-cost" step="0.01" min="0" required />
       </label>
-      <button type="submit">Add Service</button>
+      <button type="submit" style="cursor:pointer;">Add Service</button>
     </form>
-
-    <!-- Existing Services List -->
-    <table id="services-table">
+    <table id="services-table" style="width:100%; border-collapse:collapse;">
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Cost</th>
-          <th>Actions</th>
+        <tr style="background:#f0f0f0;">
+          <th style="padding:0.5rem; border:1px solid #ddd;">ID</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Name</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Description</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Cost</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Actions</th>
         </tr>
       </thead>
       <tbody></tbody>

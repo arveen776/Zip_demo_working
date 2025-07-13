@@ -15,11 +15,23 @@ model Service {
   quoteItems  QuoteItem[]
 }
 
+model Customer {
+   id         Int      @id @default(autoincrement())
+   name       String
+   address    String?
+   phone      String?
+   notes      String?
+   quotes     Quote[]  @relation("CustomerQuotes")
+}
+
 model Quote {
-  id           Int         @id @default(autoincrement())
-  employeeName String
-  createdAt    DateTime    @default(now())
-  quoteItems   QuoteItem[]
+   id           Int         @id @default(autoincrement())
+   employeeName String?
+   createdAt    DateTime    @default(now())
+   label        String?     // e.g. “Kitchen Remodel” or “Bathroom Repair”
+   customer     Customer?   @relation("CustomerQuotes", fields: [customerId], references: [id])
+   customerId   Int?
+   quoteItems   QuoteItem[]
 }
 
 model QuoteItem {

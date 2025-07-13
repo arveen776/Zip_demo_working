@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  />
+  <title>Customer Admin</title>
+  <!-- in <head> above your style.css link -->
+<link
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+  integrity="sha512-MNH0TkN1Ua4+Rz5q7TnAyzmP4PzQRgCmGnd3VHnYHbTLavsIE6UjPSxIutW35xRju1e+Qoaxl5FzT5c+9zY7RQ=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+/>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- NAV -->
+  <nav>
+    <a href="customers.html">Customers</a> |
+    <a href="employee.html">New Quote</a> |
+    <a href="manager.html">Manager</a>
+  </nav>
+
+  <h1>Customer Management</h1>
+
+  <!-- ─── 1) LIST & ADD ─────────────────────────────────────────── -->
+  <section id="list-section">
+    <form id="customer-form">
+      <label>Name <input type="text" id="cust-name" required /></label>
+      <label>Phone <input type="text" id="cust-phone" /></label>
+      <label>Address <input type="text" id="cust-address" /></label>
+      <label>Notes <textarea id="cust-notes"></textarea></label>
+      <button type="submit">Add Customer</button>
+    </form>
+
+    <table id="customers-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Name</th><th>Phone</th>
+          <th>Address</th><th>Notes</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody><!-- JS injects --></tbody>
+    </table>
+  </section>
+
+  <!-- ─── 2) DETAIL & EDIT PROFILE ─────────────────────────────────── -->
+  <section id="customer-detail" class="hidden">
+    <h2>Customer Profile</h2>
+    <div id="detail-info" style="position:relative; border:1px solid #ccc; padding:1rem;">
+      <!-- Profile text -->
+      <button id="edit-profile" style="position:absolute; top:1rem; right:1rem;">Edit Profile</button>
+      <div id="profile-display">
+        <!-- injected: <p><strong>Name:</strong> …</p> etc. -->
+      </div>
+      <form id="profile-form" class="hidden">
+        <label>Name <input type="text" id="edit-name" /></label>
+        <label>Phone <input type="text" id="edit-phone" /></label>
+        <label>Address <input type="text" id="edit-address" /></label>
+        <label>Notes <textarea id="edit-notes"></textarea></label>
+        <button type="submit">Save</button>
+        <button type="button" id="cancel-profile">Close</button>
+      </form>
+    </div>
+
+    <h3>Quotes</h3>
+    <table id="detail-quotes">
+      <thead>
+        <tr>
+          <th>Quote #</th><th>Label</th><th>Date</th>
+          <th>Total</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody><!-- JS injects --></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" style="text-align:right;"><strong>Grand Total:</strong></td>
+          <td id="customer-total"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- Quote Details Panel -->
+    <div id="quote-detail-panel" class="hidden" style="border:1px solid #888; padding:1rem; margin-bottom:1rem;">
+      <h4>Quote Details</h4>
+      <table id="quote-detail-table">
+        <thead>
+          <tr><th>Service</th><th>Qty</th><th>Line Total</th></tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"><strong>Subtotal</strong></td>
+            <td id="quote-detail-subtotal"></td>
+          </tr>
+        </tfoot>
+      </table>
+      <button id="close-quote-detail">Close</button>
+    </div>
+
+    <button id="back-to-list">← Back to List</button>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
