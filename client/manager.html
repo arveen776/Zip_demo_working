@@ -1,11 +1,9 @@
-<!-- manager.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Manager Dashboard</title>
-  <!-- in <head> above your style.css link -->
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
     rel="stylesheet"
@@ -31,40 +29,26 @@
 
   <!-- Filters + Clear -->
   <div id="manager-controls" style="margin-bottom:1rem;">
-    <!-- Customer Auto‑Match -->
-    <label style="display:inline-block; margin-right:1rem;">
+    <label style="margin-right:1rem;">
       Customer Search<br/>
-      <input
-        type="text"
-        id="customer-search"
-        placeholder="Type to search…"
-        autocomplete="off"
-      />
+      <input type="text" id="customer-search" placeholder="Type to search…" autocomplete="off"/>
     </label>
-    <label style="display:inline-block; margin-right:1rem;">
+    <label style="margin-right:1rem;">
       Or Pick Customer<br/>
       <select id="filter-customer">
         <option value="">All Customers</option>
       </select>
     </label>
-
-    <!-- Label Auto‑Match -->
-    <label style="display:inline-block; margin-right:1rem;">
+    <label style="margin-right:1rem;">
       Label Search<br/>
-      <input
-        type="text"
-        id="label-search"
-        placeholder="Type to search…"
-        autocomplete="off"
-      />
+      <input type="text" id="label-search" placeholder="Type to search…" autocomplete="off"/>
     </label>
-    <label style="display:inline-block; margin-right:1rem;">
+    <label style="margin-right:1rem;">
       Or Pick Label<br/>
       <select id="filter-label">
         <option value="">All Labels</option>
       </select>
     </label>
-
     <button
       id="clear-quotes"
       style="margin-left:1rem; color:#fff; background:#c00; padding:0.5rem; border:none; border-radius:4px; cursor:pointer;"
@@ -84,12 +68,42 @@
     <p><strong>Notes:</strong> <span id="mgr-profile-notes"></span></p>
   </div>
 
-  <!-- Quotes Container (JS will build this) -->
+  <!-- Quotes Container (populated by JS) -->
   <div id="quotes-container"></div>
 
-  <!-- Service Catalog Management (unchanged) -->
+  <!-- ─── Service Catalog Management ─────────────────────────────────────────── -->
   <section id="services-section" style="margin-top:2rem;">
-    <!-- … your existing services section … -->
+    <h2>Service Catalog</h2>
+    <form id="service-form" style="margin-bottom:1rem;">
+      <label style="display:block; margin-bottom:0.5rem;">
+        Name<br />
+        <input type="text" id="service-name" required />
+      </label>
+      <label style="display:block; margin-bottom:0.5rem;">
+        Description<br />
+        <input type="text" id="service-desc" />
+      </label>
+      <label style="display:block; margin-bottom:0.5rem;">
+        Cost ($)<br />
+        <input type="number" id="service-cost" step="0.01" min="0" required />
+      </label>
+      <button type="submit" style="cursor:pointer;">Add Service</button>
+    </form>
+
+    <table id="services-table" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f0f0f0;">
+          <th style="padding:0.5rem; border:1px solid #ddd;">ID</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Name</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Description</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Cost</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- rows populated by loadServices() in script.js -->
+      </tbody>
+    </table>
   </section>
 
   <script src="script.js"></script>
