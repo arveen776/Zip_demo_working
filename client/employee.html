@@ -1,3 +1,4 @@
+<!-- employee.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,18 +9,17 @@
   />
   <title>New Quote</title>
   <!-- in <head> above your style.css link -->
-<link
-  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
-  rel="stylesheet"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-  integrity="sha512-MNH0TkN1Ua4+Rz5q7TnAyzmP4PzQRgCmGnd3VHnYHbTLavsIE6UjPSxIutW35xRju1e+Qoaxl5FzT5c+9zY7RQ=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-/>
-
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    integrity="sha512-MNH0TkN1Ua4+Rz5q7TnAyzmP4PzQRgCmGnd3VHnYHbTLavsIE6UjPSxIutW35xRju1e+Qoaxl5FzT5c+9zY7RQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -32,9 +32,18 @@
 
   <h1>Request a Quote</h1>
 
-  <!-- 1) Customer Selector & Profile -->
+  <!-- 1) Customer Search & Selector -->
   <label style="display:block; margin-bottom:0.75rem;">
-    Customer<br/>
+    Customer Search<br/>
+    <input
+      type="text"
+      id="customer-search"
+      placeholder="Type to search…"
+      autocomplete="off"
+    />
+  </label>
+  <label style="display:block; margin-bottom:0.75rem;">
+    Or Pick from List<br/>
     <select id="customer-select" required>
       <option value="">-- Select customer --</option>
     </select>
@@ -62,19 +71,17 @@
   </label>
 
   <!-- 3) Multi-Line Service Table -->
-  <table
-    id="quote-lines"
-    style="width:100%; border-collapse:collapse; margin-bottom:0.75rem;"
-  >
+  <table id="quote-lines">
     <thead>
-      <tr style="background:#f8f8f8;">
-        <th style="border:1px solid #ddd; padding:0.5rem;">Service</th>
-        <th style="border:1px solid #ddd; padding:0.5rem;">Qty</th>
-        <th style="border:1px solid #ddd; padding:0.5rem;"></th>
+      <tr>
+        <th>Search Service</th>
+        <th>Or Pick from List</th>
+        <th>Qty</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
-      <!-- JS will inject at least one row here -->
+      <!-- initial row will be injected by script.js -->
     </tbody>
   </table>
 

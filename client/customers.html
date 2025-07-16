@@ -1,3 +1,4 @@
+<!-- customers.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,24 +8,22 @@
     content="width=device-width, initial-scale=1"
   />
   <title>Customer Admin</title>
-  <!-- in <head> above your style.css link -->
-<link
-  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
-  rel="stylesheet"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-  integrity="sha512-MNH0TkN1Ua4+Rz5q7TnAyzmP4PzQRgCmGnd3VHnYHbTLavsIE6UjPSxIutW35xRju1e+Qoaxl5FzT5c+9zY7RQ=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-/>
-
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    integrity="sha512-MNH0TkN1Ua4+Rz5q7TnAyzmP4PzQRgCmGnd3VHnYHbTLavsIE6UjPSxIutW35xRju1e+Qoaxl5FzT5c+9zY7RQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- NAV -->
-  <nav>
+  <nav style="margin-bottom:1rem;">
     <a href="customers.html">Customers</a> |
     <a href="employee.html">New Quote</a> |
     <a href="manager.html">Manager</a>
@@ -32,55 +31,92 @@
 
   <h1>Customer Management</h1>
 
-  <!-- ─── 1) LIST & ADD ─────────────────────────────────────────── -->
+  <!-- 1) ADD CUSTOMER & LIST -->
   <section id="list-section">
-    <form id="customer-form">
-      <label>Name <input type="text" id="cust-name" required /></label>
-      <label>Phone <input type="text" id="cust-phone" /></label>
-      <label>Address <input type="text" id="cust-address" /></label>
-      <label>Notes <textarea id="cust-notes"></textarea></label>
-      <button type="submit">Add Customer</button>
+    <form id="customer-form" style="margin-bottom:1rem; display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-items:end;">
+      <div>
+        <label>Name<br/>
+          <input type="text" id="cust-name" required style="width:100%;" />
+        </label>
+      </div>
+      <div>
+        <label>Phone<br/>
+          <input type="text" id="cust-phone" style="width:100%;" />
+        </label>
+      </div>
+      <div>
+        <label>Address<br/>
+          <input type="text" id="cust-address" style="width:100%;" />
+        </label>
+      </div>
+      <div>
+        <label>Notes<br/>
+          <textarea id="cust-notes" style="width:100%;"></textarea>
+        </label>
+      </div>
+      <button type="submit" style="grid-column:span 2; justify-self:start; padding:0.5rem 1rem;">
+        Add Customer
+      </button>
     </form>
 
-    <table id="customers-table">
-      <thead>
+    <!-- Search bar -->
+    <label style="display:block; margin-bottom:0.5rem;">
+      <i class="fa fa-search" aria-hidden="true"></i>
+      Search Customers:
+      <input
+        type="text"
+        id="customer-search"
+        placeholder="Type a name…"
+        autocomplete="off"
+        style="width:50%; margin-left:0.5rem;"
+      />
+    </label>
+
+    <table id="customers-table" style="width:100%; border-collapse:collapse;">
+      <thead style="background:#f7f7f7;">
         <tr>
-          <th>ID</th><th>Name</th><th>Phone</th>
-          <th>Address</th><th>Notes</th><th>Actions</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">ID</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Name</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Phone</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Address</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Notes</th>
+          <th style="padding:0.5rem; border:1px solid #ddd;">Actions</th>
         </tr>
       </thead>
-      <tbody><!-- JS injects --></tbody>
+      <tbody><!-- JS injects here --></tbody>
     </table>
   </section>
 
-  <!-- ─── 2) DETAIL & EDIT PROFILE ─────────────────────────────────── -->
+  <!-- 2) DETAIL & EDIT PROFILE -->
   <section id="customer-detail" class="hidden">
     <h2>Customer Profile</h2>
     <div id="detail-info" style="position:relative; border:1px solid #ccc; padding:1rem;">
-      <!-- Profile text -->
-      <button id="edit-profile" style="position:absolute; top:1rem; right:1rem;">Edit Profile</button>
-      <div id="profile-display">
-        <!-- injected: <p><strong>Name:</strong> …</p> etc. -->
-      </div>
+      <button id="edit-profile" style="position:absolute; top:1rem; right:1rem;">
+        Edit Profile
+      </button>
+      <div id="profile-display"></div>
       <form id="profile-form" class="hidden">
-        <label>Name <input type="text" id="edit-name" /></label>
-        <label>Phone <input type="text" id="edit-phone" /></label>
-        <label>Address <input type="text" id="edit-address" /></label>
-        <label>Notes <textarea id="edit-notes"></textarea></label>
+        <label>Name<br/><input type="text" id="edit-name" /></label><br/>
+        <label>Phone<br/><input type="text" id="edit-phone" /></label><br/>
+        <label>Address<br/><input type="text" id="edit-address" /></label><br/>
+        <label>Notes<br/><textarea id="edit-notes"></textarea></label><br/>
         <button type="submit">Save</button>
-        <button type="button" id="cancel-profile">Close</button>
+        <button type="button" id="cancel-profile">Cancel</button>
       </form>
     </div>
 
     <h3>Quotes</h3>
-    <table id="detail-quotes">
-      <thead>
+    <table id="detail-quotes" style="width:100%; border-collapse:collapse; margin-bottom:1rem;">
+      <thead style="background:#f7f7f7;">
         <tr>
-          <th>Quote #</th><th>Label</th><th>Date</th>
-          <th>Total</th><th>Actions</th>
+          <th>Quote #</th>
+          <th>Label</th>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Actions</th>
         </tr>
       </thead>
-      <tbody><!-- JS injects --></tbody>
+      <tbody><!-- JS injects here --></tbody>
       <tfoot>
         <tr>
           <td colspan="4" style="text-align:right;"><strong>Grand Total:</strong></td>
@@ -92,11 +128,11 @@
     <!-- Quote Details Panel -->
     <div id="quote-detail-panel" class="hidden" style="border:1px solid #888; padding:1rem; margin-bottom:1rem;">
       <h4>Quote Details</h4>
-      <table id="quote-detail-table">
-        <thead>
+      <table id="quote-detail-table" style="width:100%; border-collapse:collapse;">
+        <thead style="background:#eee;">
           <tr><th>Service</th><th>Qty</th><th>Line Total</th></tr>
         </thead>
-        <tbody></tbody>
+        <tbody><!-- JS injects here --></tbody>
         <tfoot>
           <tr>
             <td colspan="2"><strong>Subtotal</strong></td>
