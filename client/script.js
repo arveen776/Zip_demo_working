@@ -256,10 +256,9 @@ if (location.pathname.endsWith('employee.html')) {
 
 
 
-// script.js (manager section only; leave the rest intact)
-
+// ─── MANAGER PAGE ─────────────────────────────────────────────────────────────
 } else if (location.pathname.endsWith('manager.html')) {
-  // API endpoints (adjust if needed)
+  // API endpoints
   const apiCustomers = '/api/customers';
   const apiQuotes    = '/api/quotes';
   const apiServices  = '/api/services';
@@ -286,29 +285,24 @@ if (location.pathname.endsWith('employee.html')) {
   let customersList = [];
   let labelsList    = [];
 
-  // ─── Load and bind customers to filter dropdown ────────────────────────────
+  // Load customers for filter
   async function loadCustomerFilter() {
     try {
       const res  = await fetch(apiCustomers);
-      const list = await res.json();
-      customersList = list;
-
-      // Rebuild dropdown
+      customersList = await res.json();
       const prev = custFilter.value;
       custFilter.innerHTML =
         '<option value="">All Customers</option>' +
-        list.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        customersList.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
       custFilter.value = prev;
     } catch (err) {
       console.error('Error loading customers:', err);
     }
   }
 
-  // ─── Build label list and populate label dropdown ────────────────────────
+  // Build label options
   function populateLabelFilter() {
-    labelsList = Array.from(
-      new Set(allQuotes.map(q => q.label).filter(l => l))
-    );
+    labelsList = Array.from(new Set(allQuotes.map(q => q.label).filter(l=>l)));
     const prev = labelFilter.value;
     labelFilter.innerHTML =
       '<option value="">All Labels</option>' +
@@ -316,7 +310,7 @@ if (location.pathname.endsWith('employee.html')) {
     labelFilter.value = prev;
   }
 
-  // ─── Fetch all quotes, update filters & UI ────────────────────────────────
+  // Fetch quotes and render
   async function fetchQuotes() {
     try {
       const res = await fetch(apiQuotes);
@@ -328,17 +322,16 @@ if (location.pathname.endsWith('employee.html')) {
     }
   }
 
-  // ─── Render filtered quotes to the page ─────────────────────────────────
+  // Render filtered quotes
   async function renderQuotes() {
     const custId = custFilter.value;
     let filtered = custId
       ? allQuotes.filter(q => String(q.customerId) === custId)
       : allQuotes;
-
     const lbl = labelFilter.value;
     if (lbl) filtered = filtered.filter(q => q.label === lbl);
 
-    // Show profile panel if a customer is selected
+    // Show customer profile if selected
     if (custId) {
       try {
         const r = await fetch(`${apiCustomers}/${custId}`);
@@ -350,7 +343,7 @@ if (location.pathname.endsWith('employee.html')) {
           pNotes.textContent   = c.notes   || '';
           profileDiv.style.display = 'block';
         }
-      } catch { /* ignore */ }
+      } catch {}
     } else {
       profileDiv.style.display = 'none';
     }
@@ -359,20 +352,17 @@ if (location.pathname.endsWith('employee.html')) {
     const groups = {};
     filtered.forEach(q => {
       const name = q.customer?.name || 'Unknown';
-      groups[name] = groups[name] || [];
-      groups[name].push(q);
+      (groups[name] = groups[name]||[]).push(q);
     });
 
     // Build HTML
     quotesDiv.innerHTML = Object.entries(groups).map(([name, quotes]) => {
       const custTotal = quotes.reduce(
-        (sum, q) =>
-          sum +
-          q.quoteItems.reduce((s, i) => s + i.lineTotal, 0),
+        (sum,q) => sum + q.quoteItems.reduce((s,i)=>s+i.lineTotal,0),
         0
       );
       const htmlQuotes = quotes.map(q => {
-        const qTotal = q.quoteItems.reduce((s, i) => s + i.lineTotal, 0);
+        const qTotal = q.quoteItems.reduce((s,i)=>s+i.lineTotal,0);
         return `
           <div class="quote-card">
             <h4>Quote #${q.id} — ${q.label||'–'} — ${new Date(q.createdAt).toLocaleDateString()}</h4>
@@ -406,58 +396,104 @@ if (location.pathname.endsWith('employee.html')) {
     }).join('');
   }
 
-  // ─── Auto‑match logic for customer and label search inputs ───────────────
+  // Auto‑match search bindings
   customerSearch.addEventListener('input', () => {
     const term = customerSearch.value.trim().toLowerCase();
-    if (!term) {
-      custFilter.value = '';
-      renderQuotes();
-      return;
-    }
-    const match = customersList.find(c =>
-      c.name.toLowerCase().includes(term)
-    );
-    custFilter.value = match ? match.id : '';
+    custFilter.value = (customersList.find(c => c.name.toLowerCase().includes(term)) || {id:''}).id;
     renderQuotes();
   });
-
   labelSearch.addEventListener('input', () => {
     const term = labelSearch.value.trim().toLowerCase();
-    if (!term) {
-      labelFilter.value = '';
-      renderQuotes();
-      return;
-    }
-    const match = labelsList.find(l =>
-      l.toLowerCase().includes(term)
-    );
-    labelFilter.value = match || '';
+    labelFilter.value = labelsList.find(l => l.toLowerCase().includes(term)) || '';
     renderQuotes();
   });
 
-  // ─── Handlers for dropdown changes & Clear All ───────────────────────────
+  // Dropdown changes & clear all
   custFilter .addEventListener('change', renderQuotes);
   labelFilter.addEventListener('change', renderQuotes);
-
   clearBtn.addEventListener('click', async () => {
     if (!confirm('Delete all quotes?')) return;
     const r = await fetch(apiQuotes, { method: 'DELETE' });
     if (r.status === 204) {
       await fetchQuotes();
       alert('All quotes cleared.');
-    } else {
-      alert('Failed to clear quotes.');
-    }
+    } else alert('Failed to clear quotes.');
   });
 
-  // ─── Initial load & polling ──────────────────────────────────────────────
+  // Initial load & polling
   loadCustomerFilter().then(fetchQuotes);
   setInterval(fetchQuotes, 5000);
 
-  // ─── SERVICE CATALOG CRUD (unchanged) ────────────────────────────────────
-  // … your existing loadServices, form submit, etc. …
+  // ─── SERVICE CATALOG CRUD ─────────────────────────────────────────────────
+  async function loadServices() {
+    try {
+      const res = await fetch(apiServices);
+      const services = await res.json();
+      const tbody = document.querySelector('#services-table tbody');
+      tbody.innerHTML = services.map(s => `
+        <tr>
+          <td>${s.id}</td>
+          <td><input data-id="${s.id}" class="edit-name"  value="${s.name}" /></td>
+          <td><input data-id="${s.id}" class="edit-desc"  value="${s.description||''}" /></td>
+          <td><input data-id="${s.id}" class="edit-cost"  type="number" step="0.01" min="0" value="${s.cost.toFixed(2)}" /></td>
+          <td>
+            <button data-id="${s.id}" class="update-service">Save</button>
+            <button data-id="${s.id}" class="delete-service">Delete</button>
+          </td>
+        </tr>`).join('');
 
+      // Attach Save handlers
+      document.querySelectorAll('.update-service').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id  = btn.dataset.id;
+          const name = document.querySelector(`.edit-name[data-id="${id}"]`).value;
+          const desc = document.querySelector(`.edit-desc[data-id="${id}"]`).value;
+          const cost = parseFloat(document.querySelector(`.edit-cost[data-id="${id}"]`).value);
+          await fetch(`${apiServices}/${id}`, {
+            method:'PUT',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ name, description: desc, cost })
+          });
+          loadServices();
+        });
+      });
 
+      // Attach Delete handlers
+      document.querySelectorAll('.delete-service').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          await fetch(`${apiServices}/${id}`, { method:'DELETE' });
+          loadServices();
+        });
+      });
+    } catch (err) {
+      console.error('Error loading services:', err);
+    }
+  }
+
+  // New service form
+  document.getElementById('service-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name        = document.getElementById('service-name').value.trim();
+    const description = document.getElementById('service-desc').value.trim();
+    const cost        = parseFloat(document.getElementById('service-cost').value);
+    if (!name || isNaN(cost)) {
+      alert('Name and cost are required');
+      return;
+    }
+    await fetch(apiServices, {
+      method: 'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, description, cost })
+    });
+    document.getElementById('service-form').reset();
+    loadServices();
+  });
+
+  // Initial load & polling for services
+  loadServices();
+  setInterval(loadServices, 5000);
+}
 
 
  // script.js (CUSTOMERS PAGE section)
