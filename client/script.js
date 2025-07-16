@@ -493,7 +493,7 @@ if (location.pathname.endsWith('employee.html')) {
   // Initial load & polling for services
   loadServices();
   setInterval(loadServices, 5000);
-}
+
 
 
  // script.js (CUSTOMERS PAGE section)
