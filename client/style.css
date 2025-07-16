@@ -1,3 +1,19 @@
+/* style.css */
+
+/* ─── THEME VARIABLES ──────────────────────────────────────────────────────────── */
+:root {
+  /* Brand Colors */
+  --color-primary: #1DB954;      /* Magnum Electric green */
+  --color-secondary: #002B5B;    /* Deep navy accent */
+  --color-bg: #F9F9F9;           /* Light background */
+  --color-surface: #FFFFFF;      /* Card and surface */
+  --color-border: #E0E0E0;       /* Subtle borders */
+  --color-text: #333333;         /* Primary text */
+  --color-text-light: #666666;   /* Secondary text */
+  --radius: 0.25rem;
+  --transition: 0.2s;
+}
+
 /* ─── RESET & BASE ───────────────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
@@ -5,41 +21,43 @@
   padding: 0;
 }
 body {
-  font-family: sans-serif;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
   max-width: 800px;
   margin: 2rem auto;
   padding: 0 1rem;
-  line-height: 1.5;
-  color: #333;
+  line-height: 1.6;
 }
 h1, h2, h3, h4 {
+  color: var(--color-secondary);
   margin-bottom: 1rem;
 }
-h1 { text-align: center; }
-.hidden {
-  display: none !important;
-}
+h1 { text-align: center; font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+.hidden { display: none !important; }
 
 /* ─── NAVIGATION ────────────────────────────────────────────────────────────── */
 nav {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   text-align: center;
+  padding: 1rem;
   margin-bottom: 1.5rem;
 }
 nav a {
   margin: 0 0.5rem;
   text-decoration: none;
-  color: #0077cc;
+  color: var(--color-secondary);
+  font-weight: 500;
+  transition: color var(--transition) ease;
 }
 nav a:hover {
-  text-decoration: underline;
+  color: var(--color-primary);
 }
 
 /* ─── FORMS & BUTTONS ───────────────────────────────────────────────────────── */
-form {
-  display: grid;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
+form { display: grid; gap: 1rem; margin-bottom: 2rem; }
 label {
   display: flex;
   flex-direction: column;
@@ -51,28 +69,42 @@ textarea,
 select {
   padding: 0.5rem;
   font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
   margin-top: 0.25rem;
+  transition: border-color var(--transition) ease;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
 }
 button {
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border: none;
-  border-radius: 4px;
-  background: #0077cc;
-  color: #fff;
+  border-radius: var(--radius);
+  background-color: var(--color-primary);
+  color: var(--color-surface);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color var(--transition) ease;
 }
 button:hover {
-  background: #005fa3;
+  background-color: var(--color-secondary);
+}
+button.secondary {
+  background-color: var(--color-border);
+  color: var(--color-text);
+}
+button.secondary:hover {
+  background-color: #CCCCCC;
 }
 button[type="button"] {
-  background: #28a745;
+  background-color: var(--color-primary);
 }
 button[type="button"]:hover {
-  background: #218838;
+  background-color: var(--color-secondary);
 }
 
 /* ─── TABLES ───────────────────────────────────────────────────────────────── */
@@ -82,20 +114,18 @@ table {
   margin-bottom: 1rem;
 }
 th, td {
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   padding: 0.75rem;
   text-align: left;
 }
-thead tr {
-  background: #f8f8f8;
-}
-tfoot tr {
-  background: #f1f1f1;
-}
+thead tr { background-color: var(--color-secondary); }
+thead th { color: var(--color-surface); }
+tbody tr:nth-child(even) { background-color: var(--color-bg); }
+tfoot tr { background-color: var(--color-surface); }
 .customer-section + hr {
   margin: 2rem 0;
   border: none;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--color-border);
 }
 
 /* ─── EMPLOYEE PAGE ────────────────────────────────────────────────────────── */
@@ -112,58 +142,47 @@ tfoot tr {
   align-items: center;
   margin-bottom: 1.5rem;
 }
-#manager-controls label {
-  font-weight: normal;
-}
+#manager-controls label { font-weight: normal; }
 #clear-quotes {
-  background: #dc3545;
+  background-color: #dc3545;
+  color: #fff;
 }
-#clear-quotes:hover {
-  background: #c82333;
-}
+#clear-quotes:hover { background-color: #c82333; }
 
 /* Quote cards */
 .quote-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
   padding: 1rem;
   margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-.quote-card h4 {
-  margin-bottom: 0.5rem;
-}
+.quote-card h4 { margin-bottom: 0.5rem; }
 
 /* ─── CUSTOMER DETAIL PAGE ─────────────────────────────────────────────────── */
-#customer-detail {
-  margin-top: 2rem;
-}
+#customer-detail { margin-top: 2rem; }
 #customer-detail #detail-info {
-  background: #fafafa;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem;
 }
-#customer-detail table {
-  margin-top: 1rem;
-}
+#customer-detail table { margin-top: 1rem; }
 #back-to-list {
-  background: #6c757d;
+  background-color: var(--color-border);
   margin-top: 1rem;
 }
-#back-to-list:hover {
-  background: #5a6268;
-}
+#back-to-list:hover { background-color: #5a6268; }
 
 /* ─── SERVICE CATALOG ───────────────────────────────────────────────────────── */
-#services-section {
-  margin-top: 3rem;
-}
-#services-section h2 {
-  margin-bottom: 1rem;
-}
-#services-table input {
-  width: 100%;
-}
-#service-form button {
-  width: fit-content;
+#services-section { margin-top: 3rem; }
+#services-section h2 { margin-bottom: 1rem; }
+#services-table input { width: 100%; }
+#service-form button { width: fit-content; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  nav { flex-direction: column; align-items: flex-start; }
+  button { width: 100%; }
 }
