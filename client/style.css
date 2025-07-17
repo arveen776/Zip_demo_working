@@ -204,17 +204,20 @@ tfoot tr { background-color: var(--color-surface); }
 }
 .tabs button {
   flex: 1;
-  background: var(--color-surface);
+  background: var(--color-border);
+  color: var(--color-text-light);
   border: 1px solid var(--color-border);
   padding: 0.75rem;
   border-radius: var(--radius) var(--radius) 0 0;
   cursor: pointer;
-  transition: background var(--transition) ease;
+  transition: background var(--transition) ease, color var(--transition) ease;
 }
 .tabs button.active {
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-bg);
+  background: var(--color-surface);
+  color: var(--color-secondary);
+  border-bottom: 2px solid var(--color-primary);
 }
 .tabs button:not(.active):hover {
-  background: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-secondary);
 }
