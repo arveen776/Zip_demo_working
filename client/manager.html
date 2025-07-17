@@ -27,35 +27,46 @@
 
   <h1>Manager Dashboard</h1>
 
-  <!-- Filters + Clear -->
-  <div id="manager-controls" style="margin-bottom:1rem;">
-    <label style="margin-right:1rem;">
-      Customer Search<br/>
-      <input type="text" id="customer-search" placeholder="Type to search…" autocomplete="off"/>
-    </label>
-    <label style="margin-right:1rem;">
-      Or Pick Customer<br/>
-      <select id="filter-customer">
-        <option value="">All Customers</option>
-      </select>
-    </label>
-    <label style="margin-right:1rem;">
-      Label Search<br/>
-      <input type="text" id="label-search" placeholder="Type to search…" autocomplete="off"/>
-    </label>
-    <label style="margin-right:1rem;">
-      Or Pick Label<br/>
-      <select id="filter-label">
-        <option value="">All Labels</option>
-      </select>
-    </label>
-    <button
-      id="clear-quotes"
-      style="margin-left:1rem; color:#fff; background:#c00; padding:0.5rem; border:none; border-radius:4px; cursor:pointer;"
-    >
-      🗑️ Clear All Quotes
-    </button>
-  </div>
+ <!-- Filters + Clear -->
+<div id="manager-controls" style="margin-bottom:1rem;">
+  <label style="margin-right:1rem;">
+    Customer Search<br/>
+    <input type="text" id="customer-search" placeholder="Type to search…" autocomplete="off"/>
+  </label>
+  <label style="margin-right:1rem;">
+    Or Pick Customer<br/>
+    <select id="filter-customer">
+      <option value="">All Customers</option>
+    </select>
+  </label>
+  <label style="margin-right:1rem;">
+    Label Search<br/>
+    <input type="text" id="label-search" placeholder="Type to search…" autocomplete="off"/>
+  </label>
+  <label style="margin-right:1rem;">
+    Or Pick Label<br/>
+    <select id="filter-label">
+      <option value="">All Labels</option>
+    </select>
+  </label>
+
+  <!-- New Date Filters -->
+  <label style="margin-right:1rem;">
+    From<br/>
+    <input type="date" id="filter-date-from"/>
+  </label>
+  <label style="margin-right:1rem;">
+    To<br/>
+    <input type="date" id="filter-date-to"/>
+  </label>
+
+  <button
+    id="clear-quotes"
+    style="margin-left:1rem; color:#fff; background:#c00; padding:0.5rem; border:none; border-radius:4px; cursor:pointer;"
+  >
+    🗑️ Clear All Quotes
+  </button>
+</div>
 
   <!-- Selected Customer Profile -->
   <div

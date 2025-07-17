@@ -181,8 +181,16 @@ tfoot tr { background-color: var(--color-surface); }
 #services-table input { width: 100%; }
 #service-form button { width: fit-content; }
 
-/* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
+/* ─── SERVICE CATALOG TABLE HEADER STYLE ────────────────────────────────────── */
+#services-section #services-table thead tr {
+  background-color: var(--color-secondary) !important;
+}
+#services-section #services-table thead th {
+  color: var(--color-surface) !important;
+  font-weight: 500;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */ (max-width: 768px) {
   nav { flex-direction: column; align-items: flex-start; }
   button { width: 100%; }
 }

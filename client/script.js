@@ -269,6 +269,9 @@ if (location.pathname.endsWith('employee.html')) {
   const labelSearch    = document.getElementById('label-search');
   const labelFilter    = document.getElementById('filter-label');
   const clearBtn       = document.getElementById('clear-quotes');
+  const dateFromInput = document.getElementById('filter-date-from');
+  const dateToInput   = document.getElementById('filter-date-to');
+
 
   // Profile display
   const profileDiv = document.getElementById('manager-customer-profile');
@@ -299,6 +302,7 @@ if (location.pathname.endsWith('employee.html')) {
       console.error('Error loading customers:', err);
     }
   }
+  
 
   // Build label options
   function populateLabelFilter() {
@@ -323,30 +327,56 @@ if (location.pathname.endsWith('employee.html')) {
   }
 
   // Render filtered quotes
-  async function renderQuotes() {
-    const custId = custFilter.value;
-    let filtered = custId
-      ? allQuotes.filter(q => String(q.customerId) === custId)
-      : allQuotes;
-    const lbl = labelFilter.value;
-    if (lbl) filtered = filtered.filter(q => q.label === lbl);
+async function renderQuotes() {
+  const custId = custFilter.value;
+  let filtered = custId
+    ? allQuotes.filter(q => String(q.customerId) === custId)
+    : allQuotes;
 
-    // Show customer profile if selected
-    if (custId) {
-      try {
-        const r = await fetch(`${apiCustomers}/${custId}`);
-        if (r.ok) {
-          const c = await r.json();
-          pName.textContent    = c.name;
-          pPhone.textContent   = c.phone   || '–';
-          pAddress.textContent = c.address || '–';
-          pNotes.textContent   = c.notes   || '';
-          profileDiv.style.display = 'block';
-        }
-      } catch {}
-    } else {
-      profileDiv.style.display = 'none';
-    }
+  // Label filter
+  const lbl = labelFilter.value;
+  if (lbl) filtered = filtered.filter(q => q.label === lbl);
+
+  // ─── Date Range Filtering ──────────────────────────────────────────
+  const fromDate = dateFromInput.value
+    ? new Date(dateFromInput.value)
+    : null;
+  const toDate = dateToInput.value
+    ? new Date(dateToInput.value)
+    : null;
+  if (fromDate) {
+    filtered = filtered.filter(q => new Date(q.createdAt) >= fromDate);
+  }
+  if (toDate) {
+    // include the entire "to" day
+    const endOfTo = new Date(
+      toDate.getTime() + 24 * 60 * 60 * 1000 - 1
+    );
+    filtered = filtered.filter(
+      q => new Date(q.createdAt) <= endOfTo
+    );
+  }
+
+  // Show customer profile if selected
+  if (custId) {
+    try {
+      const r = await fetch(`${apiCustomers}/${custId}`);
+      if (r.ok) {
+        const c = await r.json();
+        pName.textContent    = c.name;
+        pPhone.textContent   = c.phone   || '–';
+        pAddress.textContent = c.address || '–';
+        pNotes.textContent   = c.notes   || '';
+        profileDiv.style.display = 'block';
+      }
+    } catch {}
+  } else {
+    profileDiv.style.display = 'none';
+  }
+
+  // ... the rest of your existing grouping/rendering logic goes here ...
+
+
 
     // Group by customer name
     const groups = {};
@@ -418,6 +448,9 @@ if (location.pathname.endsWith('employee.html')) {
       await fetchQuotes();
       alert('All quotes cleared.');
     } else alert('Failed to clear quotes.');
+  // Date range filters
+  dateFromInput.addEventListener('change', renderQuotes);
+  dateToInput  .addEventListener('change', renderQuotes);
   });
 
   // Initial load & polling
