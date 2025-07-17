@@ -263,6 +263,7 @@ if (location.pathname.endsWith('employee.html')) {
   const apiQuotes    = '/api/quotes';
   const apiServices  = '/api/services';
 
+
   // Filter elements
   const customerSearch = document.getElementById('customer-search');
   const custFilter     = document.getElementById('filter-customer');
@@ -279,6 +280,10 @@ if (location.pathname.endsWith('employee.html')) {
   const pPhone     = document.getElementById('mgr-profile-phone');
   const pAddress   = document.getElementById('mgr-profile-address');
   const pNotes     = document.getElementById('mgr-profile-notes');
+  const tabs       = document.querySelectorAll('#manager-tabs button');
+  const panelQuotes  = document.getElementById('tab-quotes');
+  const panelServices = document.getElementById('tab-services');
+
 
   // Quotes container
   const quotesDiv = document.getElementById('quotes-container');
@@ -437,7 +442,7 @@ async function renderQuotes() {
     labelFilter.value = labelsList.find(l => l.toLowerCase().includes(term)) || '';
     renderQuotes();
   });
-
+  
   // Dropdown changes & clear all
   custFilter .addEventListener('change', renderQuotes);
   labelFilter.addEventListener('change', renderQuotes);
@@ -452,6 +457,24 @@ async function renderQuotes() {
   dateFromInput.addEventListener('change', renderQuotes);
   dateToInput  .addEventListener('change', renderQuotes);
   });
+
+    // Tab switching logic
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Activate the clicked tab
+      tabs.forEach(b => b.classList.toggle('active', b === btn));
+
+      // Show/hide panels
+      if (btn.dataset.tab === 'quotes') {
+        panelQuotes.classList.remove('hidden');
+        panelServices.classList.add('hidden');
+      } else {
+        panelServices.classList.remove('hidden');
+        panelQuotes.classList.add('hidden');
+      }
+    });
+  });
+
 
   // Initial load & polling
   loadCustomerFilter().then(fetchQuotes);

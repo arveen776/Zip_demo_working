@@ -11,7 +11,6 @@
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-    integrity="sha512-MNH0TkN1Ua4+Rz5q7TnAyzmP4PzQRgCmGnd3VHnYHbTLavsIE6UjPSxIutW35xRju1e+Qoaxl5FzT5c+9zY7RQ=="
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
   />
@@ -19,7 +18,7 @@
 </head>
 <body>
   <!-- Navigation -->
-  <nav style="margin-bottom:1rem;">
+  <nav>
     <a href="customers.html">Customers</a> |
     <a href="employee.html">New Quote</a> |
     <a href="manager.html">Manager</a>
@@ -27,95 +26,94 @@
 
   <h1>Manager Dashboard</h1>
 
- <!-- Filters + Clear -->
-<div id="manager-controls" style="margin-bottom:1rem;">
-  <label style="margin-right:1rem;">
-    Customer Search<br/>
-    <input type="text" id="customer-search" placeholder="Type to search…" autocomplete="off"/>
-  </label>
-  <label style="margin-right:1rem;">
-    Or Pick Customer<br/>
-    <select id="filter-customer">
-      <option value="">All Customers</option>
-    </select>
-  </label>
-  <label style="margin-right:1rem;">
-    Label Search<br/>
-    <input type="text" id="label-search" placeholder="Type to search…" autocomplete="off"/>
-  </label>
-  <label style="margin-right:1rem;">
-    Or Pick Label<br/>
-    <select id="filter-label">
-      <option value="">All Labels</option>
-    </select>
-  </label>
-
-  <!-- New Date Filters -->
-  <label style="margin-right:1rem;">
-    From<br/>
-    <input type="date" id="filter-date-from"/>
-  </label>
-  <label style="margin-right:1rem;">
-    To<br/>
-    <input type="date" id="filter-date-to"/>
-  </label>
-
-  <button
-    id="clear-quotes"
-    style="margin-left:1rem; color:#fff; background:#c00; padding:0.5rem; border:none; border-radius:4px; cursor:pointer;"
-  >
-    🗑️ Clear All Quotes
-  </button>
-</div>
-
-  <!-- Selected Customer Profile -->
-  <div
-    id="manager-customer-profile"
-    style="display:none; border:1px solid #ccc; padding:1rem; margin-bottom:1rem;"
-  >
-    <h2 id="mgr-profile-name"></h2>
-    <p><strong>Phone:</strong> <span id="mgr-profile-phone"></span></p>
-    <p><strong>Address:</strong> <span id="mgr-profile-address"></span></p>
-    <p><strong>Notes:</strong> <span id="mgr-profile-notes"></span></p>
+  <!-- Manager Tabs -->
+  <div id="manager-tabs" class="tabs">
+    <button data-tab="quotes" class="active">Quotes</button>
+    <button data-tab="services">Service Catalog</button>
   </div>
 
-  <!-- Quotes Container (populated by JS) -->
-  <div id="quotes-container"></div>
+  <!-- Quotes Section -->
+  <div id="tab-quotes">
+    <!-- Filters + Clear -->
+    <div id="manager-controls">
+      <label>
+        Customer Search<br/>
+        <input type="text" id="customer-search" placeholder="Type to search…" autocomplete="off"/>
+      </label>
+      <label>
+        Or Pick Customer<br/>
+        <select id="filter-customer">
+          <option value="">All Customers</option>
+        </select>
+      </label>
+      <label>
+        Label Search<br/>
+        <input type="text" id="label-search" placeholder="Type to search…" autocomplete="off"/>
+      </label>
+      <label>
+        Or Pick Label<br/>
+        <select id="filter-label">
+          <option value="">All Labels</option>
+        </select>
+      </label>
+      <label>
+        From<br/>
+        <input type="date" id="filter-date-from"/>
+      </label>
+      <label>
+        To<br/>
+        <input type="date" id="filter-date-to"/>
+      </label>
+      <button id="clear-quotes" class="secondary">
+        🗑️ Clear All Quotes
+      </button>
+    </div>
 
-  <!-- ─── Service Catalog Management ─────────────────────────────────────────── -->
-  <section id="services-section" style="margin-top:2rem;">
-    <h2>Service Catalog</h2>
-    <form id="service-form" style="margin-bottom:1rem;">
-      <label style="display:block; margin-bottom:0.5rem;">
-        Name<br />
-        <input type="text" id="service-name" required />
-      </label>
-      <label style="display:block; margin-bottom:0.5rem;">
-        Description<br />
-        <input type="text" id="service-desc" />
-      </label>
-      <label style="display:block; margin-bottom:0.5rem;">
-        Cost ($)<br />
-        <input type="number" id="service-cost" step="0.01" min="0" required />
-      </label>
-      <button type="submit" style="cursor:pointer;">Add Service</button>
-    </form>
+    <!-- Selected Customer Profile -->
+    <div id="manager-customer-profile" class="card hidden">
+      <h2 id="mgr-profile-name"></h2>
+      <p><strong>Phone:</strong> <span id="mgr-profile-phone"></span></p>
+      <p><strong>Address:</strong> <span id="mgr-profile-address"></span></p>
+      <p><strong>Notes:</strong> <span id="mgr-profile-notes"></span></p>
+    </div>
 
-    <table id="services-table" style="width:100%; border-collapse:collapse;">
-      <thead>
-        <tr style="background:#f0f0f0;">
-          <th style="padding:0.5rem; border:1px solid #ddd;">ID</th>
-          <th style="padding:0.5rem; border:1px solid #ddd;">Name</th>
-          <th style="padding:0.5rem; border:1px solid #ddd;">Description</th>
-          <th style="padding:0.5rem; border:1px solid #ddd;">Cost</th>
-          <th style="padding:0.5rem; border:1px solid #ddd;">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- rows populated by loadServices() in script.js -->
-      </tbody>
-    </table>
-  </section>
+    <!-- Quotes Container (populated by JS) -->
+    <div id="quotes-container"></div>
+  </div>
+
+  <!-- Services Section -->
+  <div id="tab-services" class="hidden">
+    <!-- Service Catalog Management -->
+    <section id="services-section">
+      <h2>Service Catalog</h2>
+      <form id="service-form">
+        <label>
+          Name<br />
+          <input type="text" id="service-name" required />
+        </label>
+        <label>
+          Description<br />
+          <input type="text" id="service-desc" />
+        </label>
+        <label>
+          Cost ($)<br />
+          <input type="number" id="service-cost" step="0.01" min="0" required />
+        </label>
+        <button type="submit">Add Service</button>
+      </form>
+
+      <table id="services-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Name</th><th>Description</th><th>Cost</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- rows populated by loadServices() -->
+        </tbody>
+      </table>
+    </section>
+  </div>
 
   <script src="script.js"></script>
 </body>

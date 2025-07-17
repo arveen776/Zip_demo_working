@@ -190,7 +190,31 @@ tfoot tr { background-color: var(--color-surface); }
   font-weight: 500;
 }
 
-/* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */ (max-width: 768px) {
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
   nav { flex-direction: column; align-items: flex-start; }
   button { width: 100%; }
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.tabs button {
+  flex: 1;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 0.75rem;
+  border-radius: var(--radius) var(--radius) 0 0;
+  cursor: pointer;
+  transition: background var(--transition) ease;
+}
+.tabs button.active {
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-bg);
+}
+.tabs button:not(.active):hover {
+  background: var(--color-border);
 }
