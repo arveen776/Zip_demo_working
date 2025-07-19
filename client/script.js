@@ -43,21 +43,6 @@ if (location.pathname.endsWith('employee.html')) {
   let customersList = [];
   let servicesList  = [];
 
-  //────── Bind a service‑search input to its select for auto‑match ──────
-  function bindServiceSearch(inputEl, selectEl) {
-    inputEl.addEventListener('input', () => {
-      const term = inputEl.value.trim().toLowerCase();
-      if (!term) {
-        selectEl.value = '';
-        return;
-      }
-      const match = servicesList.find(s =>
-        s.name.toLowerCase().includes(term)
-      );
-      selectEl.value = match ? match.id : '';
-    });
-  }
-
   //────── Create a new line row with both search + select + qty ──────
   function newLineRow() {
     const tr = document.createElement('tr');
@@ -105,9 +90,10 @@ if (location.pathname.endsWith('employee.html')) {
     const prev = selectElement.value;
     selectElement.innerHTML =
       '<option value="">-- Select service --</option>' +
-      servicesList.map(s =>
-        `<option value="${s.id}">${s.name} (${s.cost.toFixed(2)})</option>`
-      ).join('');
+      servicesList.map(s => {
+        const cost = typeof s.cost === 'number' ? s.cost.toFixed(2) : 'N/A';
+        return `<option value="${s.id}">${s.name} (${cost})</option>`;
+      }).join('');
     if (servicesList.some(s => String(s.id) === prev)) {
       selectElement.value = prev;
     }
@@ -259,6 +245,7 @@ if (location.pathname.endsWith('employee.html')) {
   // Keep dropdowns fresh
   setInterval(loadCustomers, 5000);
   setInterval(loadServices, 5000);
+  updateEstimatedTotal(); // Initial calculation
 
   // "+ Add Service" button
   addLineBtn.addEventListener('click', () => {
@@ -382,10 +369,14 @@ if (location.pathname.endsWith('employee.html')) {
   function renderServiceFrequencyChart() {
     const serviceCounts = {};
     allQuotes.forEach(quote => {
-      quote.quoteItems.forEach(item => {
-        const serviceName = item.service.name;
-        serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + item.qty;
-      });
+      if (quote.quoteItems && Array.isArray(quote.quoteItems)) {
+        quote.quoteItems.forEach(item => {
+          if (item.service && item.service.name && typeof item.qty === 'number') {
+            const serviceName = item.service.name;
+            serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + item.qty;
+          }
+        });
+      }
     });
 
     const labels = Object.keys(serviceCounts);
@@ -424,8 +415,12 @@ if (location.pathname.endsWith('employee.html')) {
   function renderQuoteStatusChart() {
     const statusCounts = {};
     allQuotes.forEach(quote => {
-      const status = quote.status || 'Pending'; // Assuming a 'status' field, default to 'Pending'
-      statusCounts[status] = (statusCounts[status] || 0) + 1;
+      if (quote.status) {
+        const status = quote.status;
+        statusCounts[status] = (statusCounts[status] || 0) + 1;
+      } else {
+        statusCounts['Pending'] = (statusCounts['Pending'] || 0) + 1; // Default to Pending if status is missing
+      }
     });
 
     const labels = Object.keys(statusCounts);
@@ -470,10 +465,14 @@ if (location.pathname.endsWith('employee.html')) {
   function renderTopServicesRevenueChart() {
     const serviceRevenue = {};
     allQuotes.forEach(quote => {
-      quote.quoteItems.forEach(item => {
-        const serviceName = item.service.name;
-        serviceRevenue[serviceName] = (serviceRevenue[serviceName] || 0) + item.lineTotal;
-      });
+      if (quote.quoteItems && Array.isArray(quote.quoteItems)) {
+        quote.quoteItems.forEach(item => {
+          if (item.service && item.service.name && typeof item.lineTotal === 'number') {
+            const serviceName = item.service.name;
+            serviceRevenue[serviceName] = (serviceRevenue[serviceName] || 0) + item.lineTotal;
+          }
+        });
+      }
     });
 
     const sortedServices = Object.entries(serviceRevenue).sort(([,a],[,b]) => b - a);
@@ -873,17 +872,13 @@ async function renderQuotes() {
     if (filtered.length === 0) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align:center; padding:1rem;">
+          <td colspan="7" style="text-align:center; padding:1rem;">
             No customers match “${filterText}”
           </td>
         </tr>`;
     } else {
       tableBody.innerHTML = filtered.map(c => {
         const totalSpending = c.quotes.reduce((sum, q) => {
-          return sum + q.quoteItems.reduce((itemSum, item) => itemSum + item.lineTotal, 0);
-        }, 0);
-        return `
-          const totalSpending = c.quotes.reduce((sum, q) => {
           return sum + q.quoteItems.reduce((itemSum, item) => itemSum + item.lineTotal, 0);
         }, 0);
         const lastQuoteDate = c.quotes.length > 0
@@ -903,9 +898,6 @@ async function renderQuotes() {
               <button class="del-cust"  data-id="${c.id}">Delete</button>
             </td>
           </tr>
-        `;
-      }).join('');
-    }
         `;
       }).join('');
     }
@@ -949,7 +941,7 @@ async function renderQuotes() {
       console.error('Error loading customers:', err);
       tableBody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align:center; padding:1rem; color:red;">
+          <td colspan="7" style="text-align:center; padding:1rem; color:red;">
             Failed to load customers.
           </td>
         </tr>`;
