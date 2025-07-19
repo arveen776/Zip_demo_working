@@ -171,7 +171,7 @@ if (location.pathname.endsWith('employee.html')) {
     pPhone.textContent   = customer.phone   || '–';
     pAddress.textContent = customer.address || '–';
     pNotes.textContent   = customer.notes   || '';
-    profileDiv.style.display = 'block';
+    profileDiv.classList.remove('hidden');
   }
 
   //────── Bind the customer‑search input to auto‑select + show profile ──────
@@ -179,7 +179,7 @@ if (location.pathname.endsWith('employee.html')) {
     const term = customerSearch.value.trim().toLowerCase();
     if (!term) {
       custSelect.value = '';
-      profileDiv.style.display = 'none';
+      profileDiv.classList.add('hidden');
       return;
     }
     const match = customersList.find(c =>
@@ -190,7 +190,7 @@ if (location.pathname.endsWith('employee.html')) {
       showCustomerProfile(match);
     } else {
       custSelect.value = '';
-      profileDiv.style.display = 'none';
+      profileDiv.classList.add('hidden');
     }
   });
 
@@ -213,8 +213,11 @@ if (location.pathname.endsWith('employee.html')) {
   //────── Show/hide profile when user picks from dropdown ──────
   custSelect.addEventListener('change', () => {
     const selectedCustomer = customersList.find(c => String(c.id) === custSelect.value);
-    if (selectedCustomer) showCustomerProfile(selectedCustomer);
-    else profileDiv.style.display = 'none';
+    if (selectedCustomer) {
+      showCustomerProfile(selectedCustomer);
+    } else {
+      profileDiv.classList.add('hidden');
+    }
   });
 
   //────── Show/hide the add customer form ──────
@@ -335,7 +338,7 @@ if (location.pathname.endsWith('employee.html')) {
       if (!location.hash) {
         customerSearch.value = '';
         custSelect.value     = '';
-        profileDiv.style.display = 'none';
+        profileDiv.classList.add('hidden');
       }
       labelInput.value = '';
       linesBody.innerHTML = '';
