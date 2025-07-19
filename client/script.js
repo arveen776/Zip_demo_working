@@ -166,19 +166,12 @@ if (location.pathname.endsWith('employee.html')) {
   }
 
   //────── Show profile panel for a given customer id ──────
-  async function showCustomerProfile(id) {
-    try {
-      const res = await fetch(`${apiCustomers}/${id}`);
-      if (!res.ok) return;
-      const c = await res.json();
-      pName.textContent    = c.name;
-      pPhone.textContent   = c.phone   || '–';
-      pAddress.textContent = c.address || '–';
-      pNotes.textContent   = c.notes   || '';
-      profileDiv.style.display = 'block';
-    } catch (err) {
-      console.error('Error fetching profile:', err);
-    }
+  function showCustomerProfile(customer) {
+    pName.textContent    = customer.name;
+    pPhone.textContent   = customer.phone   || '–';
+    pAddress.textContent = customer.address || '–';
+    pNotes.textContent   = customer.notes   || '';
+    profileDiv.style.display = 'block';
   }
 
   //────── Bind the customer‑search input to auto‑select + show profile ──────
@@ -194,7 +187,7 @@ if (location.pathname.endsWith('employee.html')) {
     );
     if (match) {
       custSelect.value = match.id;
-      showCustomerProfile(match.id);
+      showCustomerProfile(match);
     } else {
       custSelect.value = '';
       profileDiv.style.display = 'none';
@@ -219,7 +212,8 @@ if (location.pathname.endsWith('employee.html')) {
 
   //────── Show/hide profile when user picks from dropdown ──────
   custSelect.addEventListener('change', () => {
-    if (custSelect.value) showCustomerProfile(custSelect.value);
+    const selectedCustomer = customersList.find(c => String(c.id) === custSelect.value);
+    if (selectedCustomer) showCustomerProfile(selectedCustomer);
     else profileDiv.style.display = 'none';
   });
 
@@ -256,7 +250,7 @@ if (location.pathname.endsWith('employee.html')) {
         await loadCustomers();
         const newCustomer = await res.json();
         custSelect.value = newCustomer.id;
-        showCustomerProfile(newCustomer.id);
+        showCustomerProfile(newCustomer);
       } else {
         alert('Error adding customer.');
       }
@@ -1093,6 +1087,13 @@ async function renderQuotes() {
               <button class="view-quote" data-id="${q.id}">View Details</button>
               <button class="edit-quote" data-id="${q.id}">Edit Label</button>
             </td>
+            <td>
+              <select class="quote-status-select" data-id="${q.id}">
+                <option value="Pending" ${q.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="Approved" ${q.status === 'Approved' ? 'selected' : ''}>Approved</option>
+                <option value="Rejected" ${q.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+              </select>
+            </td>
           </tr>
         `;
       }).join('');
@@ -1105,6 +1106,34 @@ async function renderQuotes() {
       document.querySelectorAll('.edit-quote').forEach(btn =>
         btn.addEventListener('click', () => editQuoteLabel(btn.dataset.id))
       );
+      document.querySelectorAll('.quote-status-select').forEach(select => {
+        select.addEventListener('change', async (e) => {
+          const quoteId = e.target.dataset.id;
+          const newStatus = e.target.value;
+          try {
+            const res = await fetch(`/api/quotes/${quoteId}`, {
+              method: 'PUT',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ status: newStatus })
+            });
+            if (res.ok) {
+              // Update the current customer's quotes in memory
+              const updatedQuote = await res.json();
+              const quoteIndex = currentCust.quotes.findIndex(q => q.id == quoteId);
+              if (quoteIndex !== -1) {
+                currentCust.quotes[quoteIndex].status = updatedQuote.status;
+              }
+              // Re-render the detail view to reflect the change
+              showDetail(currentCust.id);
+            } else {
+              alert('Failed to update quote status.');
+            }
+          } catch (err) {
+            console.error('Error updating quote status:', err);
+            alert('Failed to update quote status.');
+          }
+        });
+      });
     } catch (err) {
       console.error('Error fetching customer detail:', err);
     }
