@@ -319,6 +319,22 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   width: 100%;
 }
 
+/* Quote Detail Modal */
+#quote-detail-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  z-index: 1000;
+}
+
+#quote-detail-content {
+  margin-bottom: 1rem;
+}
+
 /* ─── MANAGER PAGE ─────────────────────────────────────────────────────────── */
 #manager-controls {
   display: grid;

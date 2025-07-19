@@ -712,14 +712,8 @@ async function renderQuotes() {
                 <option value="Approved" ${q.status === 'Approved' ? 'selected' : ''}>Approved</option>
                 <option value="Rejected" ${q.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
               </select>
-            </div>
-            <div class="quote-status-control">
-              <label>Status:</label>
-              <select class="quote-status-select" data-id="${q.id}">
-                <option value="Pending" ${q.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option value="Approved" ${q.status === 'Approved' ? 'selected' : ''}>Approved</option>
-                <option value="Rejected" ${q.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
-              </select>
+              <button class="view-quote-details" data-id="${q.id}">View Details</button>
+              <button class="clone-quote" data-id="${q.id}">Clone Quote</button>
             </div>
             <table>
               <thead><tr><th>Service</th><th>Qty</th><th>Line Total</th></tr></thead>
@@ -728,14 +722,14 @@ async function renderQuotes() {
                   <tr>
                     <td>${i.service.name}</td>
                     <td>${i.qty}</td>
-                    <td>$${i.lineTotal.toFixed(2)}</td>
+                    <td>${i.lineTotal.toFixed(2)}</td>
                   </tr>
                 `).join('')}
               </tbody>
               <tfoot>
                 <tr>
                   <td colspan="2"><strong>Subtotal</strong></td>
-                  <td><strong>$${qTotal.toFixed(2)}</strong></td>
+                  <td><strong>${qTotal.toFixed(2)}</strong></td>
                 </tr>
               </tfoot>
             </table>
@@ -744,12 +738,79 @@ async function renderQuotes() {
       }).join('');
       return `
         <section class="customer-section">
-          <h2>${name} — Total: $${custTotal.toFixed(2)}</h2>
+          <h2>${name} — Total: ${custTotal.toFixed(2)}</h2>
           ${htmlQuotes}
         </section><hr/>
       `;
     }).join('');
+
+    // Attach event listeners for the new buttons
+    document.querySelectorAll('.view-quote-details').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const quoteId = btn.dataset.id;
+        const quote = allQuotes.find(q => String(q.id) === quoteId);
+        showQuoteDetailModal(quote);
+      });
+    });
+
+    document.querySelectorAll('.clone-quote').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const quoteId = btn.dataset.id;
+        const quote = allQuotes.find(q => String(q.id) === quoteId);
+        const newQuote = {
+          customer: quote.customerId,
+          label: `Copy of ${quote.label}`,
+          items: quote.quoteItems.map(item => ({
+            serviceId: item.service.id,
+            qty: item.qty
+          }))
+        };
+
+        try {
+          const res = await fetch(apiQuotes, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(newQuote)
+          });
+          if (!res.ok) throw new Error(res.status);
+          const { id } = await res.json();
+          window.location.href = `employee.html#${id}`;
+        } catch (err) {
+          console.error('Error cloning quote:', err);
+          alert('Failed to clone quote.');
+        }
+      });
+    });
   }
+
+  function showQuoteDetailModal(quote) {
+    const modal = document.getElementById('quote-detail-modal');
+    const content = document.getElementById('quote-detail-content');
+    content.innerHTML = `
+      <h4>Quote #${quote.id} Details</h4>
+      <p><strong>Label:</strong> ${quote.label || '–'}</p>
+      <p><strong>Status:</strong> ${quote.status}</p>
+      <p><strong>Created:</strong> ${new Date(quote.createdAt).toLocaleDateString()}</p>
+      <h5>Items:</h5>
+      <table>
+        <thead><tr><th>Service</th><th>Qty</th><th>Line Total</th></tr></thead>
+        <tbody>
+          ${quote.quoteItems.map(i => `
+            <tr>
+              <td>${i.service.name}</td>
+              <td>${i.qty}</td>
+              <td>${i.lineTotal.toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    modal.classList.remove('hidden');
+  }
+
+  document.getElementById('close-quote-detail-modal').addEventListener('click', () => {
+    document.getElementById('quote-detail-modal').classList.add('hidden');
+  });
 
   // Auto‑match search bindings
   customerSearch.addEventListener('input', () => {
