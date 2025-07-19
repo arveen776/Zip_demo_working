@@ -107,7 +107,9 @@ if (location.pathname.endsWith('employee.html')) {
     });
 
     // Add event listeners for changes to update total
-    sel.addEventListener('change', updateEstimatedTotal);
+    sel.addEventListener('change', () => {
+      updateEstimatedTotal();
+    });
     inpQty.addEventListener('input', updateEstimatedTotal);
 
     // Populate services dropdown for this new row initially
@@ -285,7 +287,7 @@ if (location.pathname.endsWith('employee.html')) {
   clearQuoteBtn.addEventListener('click', () => {
     custSelect.value = '';
     customerSearch.value = '';
-    profileDiv.style.display = 'none';
+    profileDiv.classList.add('hidden');
     labelInput.value = '';
     linesBody.innerHTML = '';
     linesBody.appendChild(newLineRow());
@@ -343,6 +345,7 @@ if (location.pathname.endsWith('employee.html')) {
       labelInput.value = '';
       linesBody.innerHTML = '';
       linesBody.appendChild(newLineRow());
+      updateEstimatedTotal();
     } catch (err) {
       console.error('Error submitting quote:', err);
       resultDiv.textContent = 'Failed to submit quote.';
