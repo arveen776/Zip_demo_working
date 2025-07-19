@@ -19,7 +19,7 @@
 </head>
 <body>
   <!-- Navigation -->
-  <nav>
+  <nav class="main-nav">
     <a href="customers.html">Customers</a> |
     <a href="employee.html">New Quote</a> |
     <a href="manager.html">Manager</a>
@@ -31,6 +31,7 @@
   <div id="manager-tabs" class="tabs">
     <button data-tab="quotes" class="active">Dashboard & Quotes</button>
     <button data-tab="services">Service Catalog</button>
+    <button data-tab="analytics">Analytics</button>
   </div>
 
   <!-- Quotes Section -->
@@ -135,6 +136,15 @@
         </tbody>
       </table>
     </section>
+  </div>
+
+  <!-- Analytics Section -->
+  <div id="tab-analytics" class="hidden">
+    <h2>Analytics Dashboard</h2>
+    <div class="chart-container">
+      <h3>Service Frequency</h3>
+      <canvas id="service-frequency-chart"></canvas>
+    </div>
   </div>
 
   <script src="script.js"></script>

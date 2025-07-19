@@ -38,6 +38,10 @@ h2 { font-size: 1.8rem; }
 .hidden { display: none !important; }
 
 /* ─── NAVIGATION ────────────────────────────────────────────────────────────── */
+.main-nav {
+  margin-bottom: 1rem;
+}
+
 nav {
   background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
@@ -158,7 +162,160 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   border-top: 1px solid var(--color-border);
 }
 
+/* ─── CUSTOMERS PAGE ───────────────────────────────────────────────────────── */
+.customer-form-grid {
+  margin-bottom: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: end;
+}
+
+.customer-form-grid input,
+.customer-form-grid textarea {
+  width: 100%;
+}
+
+.add-customer-btn {
+  grid-column: span 2;
+  justify-self: start;
+  padding: 0.5rem 1rem;
+}
+
+.customer-search-label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.customer-search-label input {
+  width: 50%;
+  margin-left: 0.5rem;
+}
+
+.customers-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.customers-table-header {
+  background: #f7f7f7;
+}
+
+.customers-table th {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+}
+
+.detail-info-card {
+  position: relative;
+  border: 1px solid #ccc;
+  padding: 1rem;
+}
+
+.edit-profile-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.detail-quotes-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.detail-quotes-header {
+  background: #f7f7f7;
+}
+
+.grand-total-label {
+  text-align: right;
+}
+
+.quote-detail-panel {
+  border: 1px solid #888;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.quote-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.quote-detail-table-header {
+  background: #eee;
+}
+
 /* ─── EMPLOYEE PAGE ────────────────────────────────────────────────────────── */
+.form-label-block {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.add-customer-form {
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  padding: 1rem;
+}
+
+.add-customer-form input,
+.add-customer-form textarea {
+  width: 100%;
+}
+
+.customer-profile-card {
+  display: none;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.add-service-btn {
+  margin-right: 0.5rem;
+}
+
+.submit-quote-btn {
+  /* No specific styles needed beyond default button styles */
+}
+
+.quote-result-display {
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+.form-label-block {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.add-customer-form {
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  padding: 1rem;
+}
+
+.add-customer-form input,
+.add-customer-form textarea {
+  width: 100%;
+}
+
+.customer-profile-card {
+  display: none;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.add-service-btn {
+  margin-right: 0.5rem;
+}
+
+.quote-result-display {
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
 #customer-select,
 #quote-label {
   width: 100%;
@@ -230,6 +387,25 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   border-radius: var(--radius);
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
   margin-bottom: 2.5rem;
+  position: relative; /* Added for responsive charts */
+  height: 400px; /* Set a default height for charts */
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Analytics Section Specific Styles */
+#tab-analytics h2 {
+  margin-bottom: 1.5rem;
+  color: var(--color-secondary);
+}
+
+#tab-analytics .chart-container h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: var(--color-primary);
 }
 
 /* Customer KPIs */

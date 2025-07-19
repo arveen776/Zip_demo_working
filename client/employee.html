@@ -24,7 +24,7 @@
 </head>
 <body>
   <!-- Navigation -->
-  <nav style="margin-bottom:1rem;">
+  <nav class="main-nav">
     <a href="customers.html">Customers</a> |
     <a href="employee.html">New Quote</a> |
     <a href="manager.html">Manager</a>
@@ -33,7 +33,7 @@
   <h1>Request a Quote</h1>
 
   <!-- 1) Customer Search & Selector -->
-  <label style="display:block; margin-bottom:0.75rem;">
+  <label class="form-label-block">
     Customer Search<br/>
     <input
       type="text"
@@ -42,7 +42,7 @@
       autocomplete="off"
     />
   </label>
-  <label style="display:block; margin-bottom:0.75rem;">
+  <label class="form-label-block">
     Or Pick from List<br/>
     <select id="customer-select" required>
       <option value="">-- Select customer --</option>
@@ -51,30 +51,27 @@
 
   <button type="button" id="add-customer-btn" class="secondary">+ Add New Customer</button>
 
-  <div id="add-customer-form" class="hidden" style="margin-bottom: 1rem; border: 1px solid #ccc; padding: 1rem;">
+  <div id="add-customer-form" class="add-customer-form hidden">
     <h3>New Customer</h3>
     <form id="new-customer-form">
         <label>Name<br/>
-          <input type="text" id="new-cust-name" required style="width:100%;" />
+          <input type="text" id="new-cust-name" required />
         </label>
         <label>Phone<br/>
-          <input type="text" id="new-cust-phone" style="width:100%;" />
+          <input type="text" id="new-cust-phone" />
         </label>
         <label>Address<br/>
-          <input type="text" id="new-cust-address" style="width:100%;" />
+          <input type="text" id="new-cust-address" />
         </label>
         <label>Notes<br/>
-          <textarea id="new-cust-notes" style="width:100%;"></textarea>
+          <textarea id="new-cust-notes"></textarea>
         </label>
         <button type="submit">Save Customer</button>
         <button type="button" id="cancel-new-customer">Cancel</button>
     </form>
   </div>
 
-  <div
-    id="customer-profile"
-    style="display:none; border:1px solid #ccc; padding:1rem; margin-bottom:1rem;"
-  >
+  <div id="customer-profile" class="customer-profile-card hidden">
     <h3 id="profile-name"></h3>
     <p><strong>Phone:</strong> <span id="profile-phone"></span></p>
     <p><strong>Address:</strong> <span id="profile-address"></span></p>
@@ -82,7 +79,7 @@
   </div>
 
   <!-- 2) Quote Label -->
-  <label style="display:block; margin-bottom:0.75rem;">
+  <label class="form-label-block">
     Quote label<br/>
     <input
       type="text"
@@ -107,17 +104,14 @@
     </tbody>
   </table>
 
-  <button id="add-line" type="button" style="margin-right:0.5rem;">
+  <button id="add-line" type="button" class="add-service-btn">
     + Add Service
   </button>
-  <button id="submit-quote" type="button">
+  <button id="submit-quote" type="button" class="submit-quote-btn">
     Submit Quote
   </button>
 
-  <div
-    id="quote-result"
-    style="margin-top:1rem; font-weight:bold;"
-  ></div>
+  <div id="quote-result" class="quote-result-display"></div>
 
   <script src="script.js"></script>
 </body>

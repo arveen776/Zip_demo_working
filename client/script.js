@@ -332,6 +332,7 @@ if (location.pathname.endsWith('employee.html')) {
   const tabs       = document.querySelectorAll('#manager-tabs button');
   const panelQuotes  = document.getElementById('tab-quotes');
   const panelServices = document.getElementById('tab-services');
+  const panelAnalytics = document.getElementById('tab-analytics');
 
   // KPIs
   const kpiRevenue  = document.getElementById('kpi-revenue');
@@ -341,6 +342,49 @@ if (location.pathname.endsWith('employee.html')) {
   // Chart
   const chartCanvas = document.getElementById('revenue-chart');
   let revenueChart  = null;
+  let serviceFrequencyChart = null;
+
+  // Function to render service frequency chart
+  function renderServiceFrequencyChart() {
+    const serviceCounts = {};
+    allQuotes.forEach(quote => {
+      quote.quoteItems.forEach(item => {
+        const serviceName = item.service.name;
+        serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + item.qty;
+      });
+    });
+
+    const labels = Object.keys(serviceCounts);
+    const data = Object.values(serviceCounts);
+
+    if (serviceFrequencyChart) {
+      serviceFrequencyChart.destroy();
+    }
+
+    const ctx = document.getElementById('service-frequency-chart').getContext('2d');
+    serviceFrequencyChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Service Frequency',
+          data: data,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
 
 
   // Quotes container
@@ -574,9 +618,16 @@ async function renderQuotes() {
       if (btn.dataset.tab === 'quotes') {
         panelQuotes.classList.remove('hidden');
         panelServices.classList.add('hidden');
-      } else {
+        panelAnalytics.classList.add('hidden');
+      } else if (btn.dataset.tab === 'services') {
         panelServices.classList.remove('hidden');
         panelQuotes.classList.add('hidden');
+        panelAnalytics.classList.add('hidden');
+      } else if (btn.dataset.tab === 'analytics') {
+        panelAnalytics.classList.remove('hidden');
+        panelQuotes.classList.add('hidden');
+        panelServices.classList.add('hidden');
+        renderServiceFrequencyChart();
       }
     });
   });
