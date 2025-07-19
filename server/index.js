@@ -199,27 +199,49 @@ app.delete('/api/customers/:id', async (req, res) => {
 });
 
 // ─── QUOTE DETAIL & UPDATE ────────────────────────────────────────────────────
+
+// Fetch a single quote (with its items, services, and status)
 app.get('/api/quotes/:id', async (req, res) => {
   const id = Number(req.params.id);
   try {
-    const quote = await prisma.quote.findUnique({ where: { id }, include: { quoteItems: { include: { service: true } } }});
+    const quote = await prisma.quote.findUnique({
+      where: { id },
+      include: {
+        quoteItems: { include: { service: true } }
+      }
+    });
+    if (!quote) {
+      return res.status(404).json({ error: 'Quote not found' });
+    }
     return res.json(quote);
   } catch (err) {
     console.error('Error fetching quote detail:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Update quote label and/or status
 app.put('/api/quotes/:id', async (req, res) => {
   const id = Number(req.params.id);
-  const { label } = req.body;
+  const { label, status } = req.body;
+
+  // Build the update payload dynamically
+  const data = {};
+  if (label   !== undefined) data.label  = label.trim();
+  if (status  !== undefined) data.status = status;
+
   try {
-    const updated = await prisma.quote.update({ where: { id }, data: { label }});
+    const updated = await prisma.quote.update({
+      where: { id },
+      data
+    });
     return res.json(updated);
   } catch (err) {
-    console.error('Error updating quote label:', err);
+    console.error('Error updating quote:', err);
     return res.status(404).json({ error: 'Quote not found' });
   }
 });
+
 
 // ─── START SERVER ───────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 4000;

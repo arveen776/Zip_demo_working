@@ -28,6 +28,7 @@ model Customer {
 model Quote {
    id           Int         @id @default(autoincrement())
    employeeName String?
+   status       String      @default("Pending")
    createdAt    DateTime    @default(now())
    label        String?     // e.g. “Kitchen Remodel” or “Bathroom Repair”
    customer     Customer?   @relation("CustomerQuotes", fields: [customerId], references: [id])
