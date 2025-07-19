@@ -48,13 +48,22 @@ if (location.pathname.endsWith('employee.html')) {
     const tr = document.createElement('tr');
     tr.classList.add('line-row');
 
-    // Service selection cell
-    const tdService = document.createElement('td');
-    const selectService = document.createElement('select');
-    selectService.className = 'service-select';
-    tdService.appendChild(selectService);
+    // search cell
+    const tdSearch = document.createElement('td');
+    const inpSearch = document.createElement('input');
+    inpSearch.type = 'text';
+    inpSearch.className = 'service-search';
+    inpSearch.placeholder = 'Type to search…';
+    inpSearch.autocomplete = 'off';
+    tdSearch.appendChild(inpSearch);
 
-    // Qty cell
+    // select cell
+    const tdSelect = document.createElement('td');
+    const sel = document.createElement('select');
+    sel.className = 'service-select';
+    tdSelect.appendChild(sel);
+
+    // qty cell
     const tdQty = document.createElement('td');
     const inpQty = document.createElement('input');
     inpQty.type = 'number';
@@ -63,7 +72,7 @@ if (location.pathname.endsWith('employee.html')) {
     inpQty.value = 1;
     tdQty.appendChild(inpQty);
 
-    // Remove cell
+    // remove cell
     const tdRm = document.createElement('td');
     const btnRm = document.createElement('button');
     btnRm.type = 'button';
@@ -75,12 +84,34 @@ if (location.pathname.endsWith('employee.html')) {
     });
     tdRm.appendChild(btnRm);
 
-    tr.append(tdService, tdQty, tdRm);
-    selectService.addEventListener('change', updateEstimatedTotal);
+    tr.append(tdSearch, tdSelect, tdQty, tdRm);
+
+    // wire up auto‑match
+    inpSearch.addEventListener('input', () => {
+      const term = inpSearch.value.trim().toLowerCase();
+      const filteredServices = servicesList.filter(s =>
+        s.name.toLowerCase().includes(term)
+      );
+      sel.innerHTML =
+        '<option value="">-- Select service --</option>' +
+        filteredServices.map(s => {
+          const cost = typeof s.cost === 'number' ? s.cost.toFixed(2) : 'N/A';
+          return `<option value="${s.id}">${s.name} (${cost})</option>`;
+        }).join('');
+      if (filteredServices.some(s => String(s.id) === sel.value)) {
+        // Keep selected value if it's still in the filtered list
+      } else {
+        sel.value = ''; // Clear selection if not in filtered list
+      }
+      updateEstimatedTotal();
+    });
+
+    // Add event listeners for changes to update total
+    sel.addEventListener('change', updateEstimatedTotal);
     inpQty.addEventListener('input', updateEstimatedTotal);
 
-    // Populate services dropdown for this new row
-    populateServiceSelect(selectService);
+    // Populate services dropdown for this new row initially
+    populateServiceSelect(sel);
 
     return tr;
   }
@@ -673,6 +704,22 @@ async function renderQuotes() {
         return `
           <div class="quote-card">
             <h4>Quote #${q.id} — ${q.label||'–'} — ${new Date(q.createdAt).toLocaleDateString()}</h4>
+            <div class="quote-status-control">
+              <label>Status:</label>
+              <select class="quote-status-select" data-id="${q.id}">
+                <option value="Pending" ${q.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="Approved" ${q.status === 'Approved' ? 'selected' : ''}>Approved</option>
+                <option value="Rejected" ${q.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+              </select>
+            </div>
+            <div class="quote-status-control">
+              <label>Status:</label>
+              <select class="quote-status-select" data-id="${q.id}">
+                <option value="Pending" ${q.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="Approved" ${q.status === 'Approved' ? 'selected' : ''}>Approved</option>
+                <option value="Rejected" ${q.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+              </select>
+            </div>
             <table>
               <thead><tr><th>Service</th><th>Qty</th><th>Line Total</th></tr></thead>
               <tbody>
@@ -801,6 +848,37 @@ async function renderQuotes() {
           const id = btn.dataset.id;
           await fetch(`${apiServices}/${id}`, { method:'DELETE' });
           loadServices();
+        });
+      });
+
+      // Attach Quote Status Change handlers
+      document.querySelectorAll('.quote-status-select').forEach(select => {
+        select.addEventListener('change', async (e) => {
+          const quoteId = e.target.dataset.id;
+          const newStatus = e.target.value;
+          try {
+            const res = await fetch(`${apiQuotes}/${quoteId}`, {
+              method: 'PUT',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ status: newStatus })
+            });
+            if (res.ok) {
+              // Update local data and re-render charts
+              const updatedQuote = await res.json();
+              const index = allQuotes.findIndex(q => q.id == quoteId);
+              if (index !== -1) {
+                allQuotes[index].status = updatedQuote.status;
+              }
+              renderServiceFrequencyChart();
+              renderQuoteStatusChart();
+              renderTopServicesRevenueChart();
+            } else {
+              alert('Failed to update quote status.');
+            }
+          } catch (err) {
+            console.error('Error updating quote status:', err);
+            alert('Failed to update quote status.');
+          }
         });
       });
     } catch (err) {

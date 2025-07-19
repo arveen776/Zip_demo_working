@@ -400,10 +400,26 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
 #tab-analytics h2 {
   margin-bottom: 1.5rem;
   color: var(--color-secondary);
+  text-align: center;
 }
 
 #tab-analytics .chart-container {
+  background-color: var(--color-surface);
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
   margin-bottom: 1.5rem;
+  position: relative;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#tab-analytics .chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 #tab-analytics .chart-container h3 {
@@ -416,6 +432,10 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: var(--color-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
 /* Customer KPIs */
