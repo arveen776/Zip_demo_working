@@ -402,10 +402,20 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   color: var(--color-secondary);
 }
 
+#tab-analytics .chart-container {
+  margin-bottom: 1.5rem;
+}
+
 #tab-analytics .chart-container h3 {
   text-align: center;
   margin-bottom: 1rem;
   color: var(--color-primary);
+}
+
+#tab-analytics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
 }
 
 /* Customer KPIs */
@@ -419,13 +429,54 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
 
 /* ─── CUSTOMER DETAIL PAGE ─────────────────────────────────────────────────── */
 #customer-detail { margin-top: 2.5rem; }
-#customer-detail #detail-info {
-  background-color: var(--color-surface);
+
+.detail-info-card {
+  position: relative;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: 2rem;
-  position: relative;
+  background-color: var(--color-surface);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
+
+.edit-profile-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.profile-display-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.profile-display-grid p {
+  margin-bottom: 0;
+}
+
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: end;
+}
+
+.profile-form-grid label {
+  margin-bottom: 0;
+}
+
+.profile-form-grid input,
+.profile-form-grid textarea {
+  width: 100%;
+}
+
+.profile-form-grid button {
+  width: auto;
+  justify-self: start;
+}
+
 #customer-detail table { margin-top: 1.5rem; }
 #back-to-list {
   background-color: var(--color-secondary);
@@ -530,6 +581,38 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   margin-right: 0.5rem;
 }
 
+.profile-display-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.profile-display-grid p {
+  margin-bottom: 0;
+}
+
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: end;
+}
+
+.profile-form-grid label {
+  margin-bottom: 0;
+}
+
+.profile-form-grid input,
+.profile-form-grid textarea {
+  width: 100%;
+}
+
+.profile-form-grid button {
+  width: auto;
+  justify-self: start;
+}
+
 /* Quote Detail Panel */
 #quote-detail-panel {
   background-color: #fdfdfd;
@@ -605,4 +688,56 @@ table button:last-child {
   text-align: center;
   font-size: 1.3rem;
   font-weight: 600;
+}
+
+.quote-summary {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  text-align: right;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.quote-lines-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+
+.quote-lines-table th,
+.quote-lines-table td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.8rem;
+  text-align: left;
+}
+
+.quote-lines-table thead th {
+  background-color: var(--color-secondary);
+  color: var(--color-surface);
+}
+
+.quote-lines-table tbody tr:nth-child(even) {
+  background-color: var(--color-bg);
+}
+
+.quote-lines-table input[type="text"],
+.quote-lines-table input[type="number"],
+.quote-lines-table select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.quote-lines-table .remove-line {
+  background-color: #dc3545;
+  color: #fff;
+  padding: 0.5rem 0.8rem;
+}
+
+.quote-lines-table .remove-line:hover {
+  background-color: #c82333;
 }

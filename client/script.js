@@ -36,6 +36,8 @@ if (location.pathname.endsWith('employee.html')) {
   const submitBtn  = document.getElementById('submit-quote');
   const resultDiv  = document.getElementById('quote-result');
   const linesBody  = document.querySelector('#quote-lines tbody');
+  const estimatedTotalSpan = document.getElementById('estimated-total');
+  const clearQuoteBtn = document.getElementById('clear-quote');
 
   // In‑memory lists
   let customersList = [];
@@ -61,22 +63,13 @@ if (location.pathname.endsWith('employee.html')) {
     const tr = document.createElement('tr');
     tr.classList.add('line-row');
 
-    // search cell
-    const tdSearch = document.createElement('td');
-    const inpSearch = document.createElement('input');
-    inpSearch.type = 'text';
-    inpSearch.className = 'service-search';
-    inpSearch.placeholder = 'Type to search…';
-    inpSearch.autocomplete = 'off';
-    tdSearch.appendChild(inpSearch);
+    // Service selection cell
+    const tdService = document.createElement('td');
+    const selectService = document.createElement('select');
+    selectService.className = 'service-select';
+    tdService.appendChild(selectService);
 
-    // select cell
-    const tdSelect = document.createElement('td');
-    const sel = document.createElement('select');
-    sel.className = 'service-select';
-    tdSelect.appendChild(sel);
-
-    // qty cell
+    // Qty cell
     const tdQty = document.createElement('td');
     const inpQty = document.createElement('input');
     inpQty.type = 'number';
@@ -85,21 +78,53 @@ if (location.pathname.endsWith('employee.html')) {
     inpQty.value = 1;
     tdQty.appendChild(inpQty);
 
-    // remove cell
+    // Remove cell
     const tdRm = document.createElement('td');
     const btnRm = document.createElement('button');
     btnRm.type = 'button';
     btnRm.className = 'remove-line secondary';
     btnRm.textContent = '×';
-    btnRm.addEventListener('click', () => tr.remove());
+    btnRm.addEventListener('click', () => {
+      tr.remove();
+      updateEstimatedTotal();
+    });
     tdRm.appendChild(btnRm);
 
-    tr.append(tdSearch, tdSelect, tdQty, tdRm);
+    tr.append(tdService, tdQty, tdRm);
+    selectService.addEventListener('change', updateEstimatedTotal);
+    inpQty.addEventListener('input', updateEstimatedTotal);
 
-    // wire up auto‑match
-    bindServiceSearch(inpSearch, sel);
+    // Populate services dropdown for this new row
+    populateServiceSelect(selectService);
 
     return tr;
+  }
+
+  // Helper function to populate service select dropdowns
+  function populateServiceSelect(selectElement) {
+    const prev = selectElement.value;
+    selectElement.innerHTML =
+      '<option value="">-- Select service --</option>' +
+      servicesList.map(s =>
+        `<option value="${s.id}">${s.name} (${s.cost.toFixed(2)})</option>`
+      ).join('');
+    if (servicesList.some(s => String(s.id) === prev)) {
+      selectElement.value = prev;
+    }
+  }
+
+  //────── Update Estimated Total ──────
+  function updateEstimatedTotal() {
+    let total = 0;
+    Array.from(linesBody.children).forEach(tr => {
+      const serviceId = tr.querySelector('select.service-select').value;
+      const qty = parseInt(tr.querySelector('input.service-qty').value);
+      const service = servicesList.find(s => String(s.id) === serviceId);
+      if (service && qty > 0) {
+        total += service.cost * qty;
+      }
+    });
+    estimatedTotalSpan.textContent = total.toFixed(2);
   }
 
   //────── Load customers, populate select & in‑memory list ──────
@@ -165,17 +190,11 @@ if (location.pathname.endsWith('employee.html')) {
       const res = await fetch(apiServices);
       servicesList = await res.json();
 
+      // Populate all existing service-select dropdowns
       document.querySelectorAll('select.service-select').forEach(sel => {
-        const prev = sel.value;
-        sel.innerHTML =
-          '<option value="">-- Select service --</option>' +
-          servicesList.map(s =>
-            `<option value="${s.id}">${s.name} ($${s.cost.toFixed(2)})</option>`
-          ).join('');
-        if (servicesList.some(s => String(s.id) === prev)) {
-          sel.value = prev;
-        }
+        populateServiceSelect(sel);
       });
+      updateEstimatedTotal(); // Update total after services are loaded
     } catch (err) {
       console.error('Error loading services:', err);
     }
@@ -244,6 +263,19 @@ if (location.pathname.endsWith('employee.html')) {
   // "+ Add Service" button
   addLineBtn.addEventListener('click', () => {
     linesBody.appendChild(newLineRow());
+    updateEstimatedTotal();
+  });
+
+  // "Clear Quote" button
+  clearQuoteBtn.addEventListener('click', () => {
+    custSelect.value = '';
+    customerSearch.value = '';
+    profileDiv.style.display = 'none';
+    labelInput.value = '';
+    linesBody.innerHTML = '';
+    linesBody.appendChild(newLineRow());
+    updateEstimatedTotal();
+    resultDiv.textContent = '';
   });
 
   // "Submit Quote" button
@@ -343,6 +375,8 @@ if (location.pathname.endsWith('employee.html')) {
   const chartCanvas = document.getElementById('revenue-chart');
   let revenueChart  = null;
   let serviceFrequencyChart = null;
+  let quoteStatusChart = null;
+  let topServicesRevenueChart = null;
 
   // Function to render service frequency chart
   function renderServiceFrequencyChart() {
@@ -371,6 +405,95 @@ if (location.pathname.endsWith('employee.html')) {
           data: data,
           backgroundColor: 'rgba(75, 192, 192, 0.6)',
           borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  // Function to render quote status chart
+  function renderQuoteStatusChart() {
+    const statusCounts = {};
+    allQuotes.forEach(quote => {
+      const status = quote.status || 'Pending'; // Assuming a 'status' field, default to 'Pending'
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+    });
+
+    const labels = Object.keys(statusCounts);
+    const data = Object.values(statusCounts);
+
+    if (quoteStatusChart) {
+      quoteStatusChart.destroy();
+    }
+
+    const ctx = document.getElementById('quote-status-chart').getContext('2d');
+    quoteStatusChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(153, 102, 255, 0.6)'
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+      }
+    });
+  }
+
+  // Function to render top services by revenue chart
+  function renderTopServicesRevenueChart() {
+    const serviceRevenue = {};
+    allQuotes.forEach(quote => {
+      quote.quoteItems.forEach(item => {
+        const serviceName = item.service.name;
+        serviceRevenue[serviceName] = (serviceRevenue[serviceName] || 0) + item.lineTotal;
+      });
+    });
+
+    const sortedServices = Object.entries(serviceRevenue).sort(([,a],[,b]) => b - a);
+    const labels = sortedServices.map(([name,]) => name);
+    const data = sortedServices.map(([,revenue]) => revenue);
+
+    if (topServicesRevenueChart) {
+      topServicesRevenueChart.destroy();
+    }
+
+    const ctx = document.getElementById('top-services-revenue-chart').getContext('2d');
+    topServicesRevenueChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Revenue',
+          data: data,
+          backgroundColor: 'rgba(153, 102, 255, 0.6)',
+          borderColor: 'rgba(153, 102, 255, 1)',
           borderWidth: 1
         }]
       },
@@ -628,6 +751,8 @@ async function renderQuotes() {
         panelQuotes.classList.add('hidden');
         panelServices.classList.add('hidden');
         renderServiceFrequencyChart();
+        renderQuoteStatusChart();
+        renderTopServicesRevenueChart();
       }
     });
   });
@@ -753,19 +878,36 @@ async function renderQuotes() {
           </td>
         </tr>`;
     } else {
-      tableBody.innerHTML = filtered.map(c => `
-        <tr>
-          <td>${c.id}</td>
-          <td>${c.name}</td>
-          <td>${c.phone || ''}</td>
-          <td>${c.address || ''}</td>
-          <td>${c.notes || ''}</td>
-          <td>
-            <button class="view-cust" data-id="${c.id}">View</button>
-            <button class="del-cust"  data-id="${c.id}">Delete</button>
-          </td>
-        </tr>
-      `).join('');
+      tableBody.innerHTML = filtered.map(c => {
+        const totalSpending = c.quotes.reduce((sum, q) => {
+          return sum + q.quoteItems.reduce((itemSum, item) => itemSum + item.lineTotal, 0);
+        }, 0);
+        return `
+          const totalSpending = c.quotes.reduce((sum, q) => {
+          return sum + q.quoteItems.reduce((itemSum, item) => itemSum + item.lineTotal, 0);
+        }, 0);
+        const lastQuoteDate = c.quotes.length > 0
+          ? new Date(Math.max(...c.quotes.map(q => new Date(q.createdAt)))).toLocaleDateString()
+          : 'N/A';
+        return `
+          <tr>
+            <td>${c.id}</td>
+            <td>${c.name}</td>
+            <td>${c.phone || ''}</td>
+            <td>${c.address || ''}</td>
+            <td>${c.notes || ''}</td>
+            <td>${totalSpending.toFixed(2)}</td>
+            <td>${lastQuoteDate}</td>
+            <td>
+              <button class="view-cust" data-id="${c.id}">View</button>
+              <button class="del-cust"  data-id="${c.id}">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+        `;
+      }).join('');
     }
 
     // Attach handlers
@@ -858,10 +1000,10 @@ async function renderQuotes() {
 
       // Profile display
       infoDiv.innerHTML = `
-        <p><strong>${c.name}</strong></p>
-        <p>Phone: ${c.phone   || '–'}</p>
-        <p>Address: ${c.address|| '–'}</p>
-        <p>Notes: ${c.notes   || ''}</p>
+        <p><strong>Name:</strong> ${c.name}</p>
+        <p><strong>Phone:</strong> ${c.phone   || '–'}</p>
+        <p><strong>Address:</strong> ${c.address|| '–'}</p>
+        <p><strong>Notes:</strong> ${c.notes   || ''}</p>
       `;
       profileForm.classList.add('hidden');
       infoDiv.classList.remove('hidden');

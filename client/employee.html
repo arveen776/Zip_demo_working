@@ -90,11 +90,10 @@
   </label>
 
   <!-- 3) Multi-Line Service Table -->
-  <table id="quote-lines">
+  <table id="quote-lines" class="quote-lines-table">
     <thead>
       <tr>
-        <th>Search Service</th>
-        <th>Or Pick from List</th>
+        <th>Service Details</th>
         <th>Qty</th>
         <th></th>
       </tr>
@@ -107,6 +106,10 @@
   <button id="add-line" type="button" class="add-service-btn">
     + Add Service
   </button>
+  <div class="quote-summary">
+    <p><strong>Estimated Total: $<span id="estimated-total">0.00</span></strong></p>
+  </div>
+  <button id="clear-quote" type="button" class="secondary">Clear Quote</button>
   <button id="submit-quote" type="button" class="submit-quote-btn">
     Submit Quote
   </button>

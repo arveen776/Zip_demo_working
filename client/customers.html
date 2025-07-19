@@ -95,6 +95,8 @@
           <th>Phone</th>
           <th>Address</th>
           <th>Notes</th>
+          <th>Total Spending</th>
+          <th>Last Quote Date</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -105,18 +107,18 @@
   <!-- 2) DETAIL & EDIT PROFILE -->
   <section id="customer-detail" class="hidden">
     <h2>Customer Profile</h2>
-    <div id="detail-info" class="detail-info-card">
+    <div id="detail-info" class="card detail-info-card">
       <button id="edit-profile" class="edit-profile-btn">
         Edit Profile
       </button>
-      <div id="profile-display"></div>
-      <form id="profile-form" class="hidden">
-        <label>Name<br/><input type="text" id="edit-name" /></label><br/>
-        <label>Phone<br/><input type="text" id="edit-phone" /></label><br/>
-        <label>Address<br/><input type="text" id="edit-address" /></label><br/>
-        <label>Notes<br/><textarea id="edit-notes"></textarea></label><br/>
+      <div id="profile-display" class="profile-display-grid"></div>
+      <form id="profile-form" class="profile-form-grid hidden">
+        <label>Name<br/><input type="text" id="edit-name" /></label>
+        <label>Phone<br/><input type="text" id="edit-phone" /></label>
+        <label>Address<br/><input type="text" id="edit-address" /></label>
+        <label>Notes<br/><textarea id="edit-notes"></textarea></label>
         <button type="submit">Save</button>
-        <button type="button" id="cancel-profile">Cancel</button>
+        <button type="button" id="cancel-profile" class="secondary">Cancel</button>
       </form>
     </div>
 
