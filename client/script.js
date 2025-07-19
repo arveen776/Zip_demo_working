@@ -103,7 +103,7 @@ if (location.pathname.endsWith('employee.html')) {
       } else {
         sel.value = ''; // Clear selection if not in filtered list
       }
-      updateEstimatedTotal();
+      populateServiceSelect(sel, filteredServices);
     });
 
     // Add event listeners for changes to update total
@@ -114,20 +114,21 @@ if (location.pathname.endsWith('employee.html')) {
 
     // Populate services dropdown for this new row initially
     populateServiceSelect(sel);
+    updateEstimatedTotal();
 
     return tr;
   }
 
   // Helper function to populate service select dropdowns
-  function populateServiceSelect(selectElement) {
+  function populateServiceSelect(selectElement, services = servicesList) {
     const prev = selectElement.value;
     selectElement.innerHTML =
       '<option value="">-- Select service --</option>' +
-      servicesList.map(s => {
+      services.map(s => {
         const cost = typeof s.cost === 'number' ? s.cost.toFixed(2) : 'N/A';
         return `<option value="${s.id}">${s.name} (${cost})</option>`;
       }).join('');
-    if (servicesList.some(s => String(s.id) === prev)) {
+    if (services.some(s => String(s.id) === prev)) {
       selectElement.value = prev;
     }
   }

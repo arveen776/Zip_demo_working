@@ -265,7 +265,6 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
 }
 
 .customer-profile-card {
-  display: none;
   border: 1px solid #ccc;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -301,7 +300,6 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
 }
 
 .customer-profile-card {
-  display: none;
   border: 1px solid #ccc;
   padding: 1rem;
   margin-bottom: 1rem;
