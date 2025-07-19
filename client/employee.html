@@ -49,6 +49,28 @@
     </select>
   </label>
 
+  <button type="button" id="add-customer-btn" class="secondary">+ Add New Customer</button>
+
+  <div id="add-customer-form" class="hidden" style="margin-bottom: 1rem; border: 1px solid #ccc; padding: 1rem;">
+    <h3>New Customer</h3>
+    <form id="new-customer-form">
+        <label>Name<br/>
+          <input type="text" id="new-cust-name" required style="width:100%;" />
+        </label>
+        <label>Phone<br/>
+          <input type="text" id="new-cust-phone" style="width:100%;" />
+        </label>
+        <label>Address<br/>
+          <input type="text" id="new-cust-address" style="width:100%;" />
+        </label>
+        <label>Notes<br/>
+          <textarea id="new-cust-notes" style="width:100%;"></textarea>
+        </label>
+        <button type="submit">Save Customer</button>
+        <button type="button" id="cancel-new-customer">Cancel</button>
+    </form>
+  </div>
+
   <div
     id="customer-profile"
     style="display:none; border:1px solid #ccc; padding:1rem; margin-bottom:1rem;"

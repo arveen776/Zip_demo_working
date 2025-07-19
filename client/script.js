@@ -24,6 +24,12 @@ if (location.pathname.endsWith('employee.html')) {
   const pAddress       = document.getElementById('profile-address');
   const pNotes         = document.getElementById('profile-notes');
 
+  // Add customer elements
+  const addCustomerBtn      = document.getElementById('add-customer-btn');
+  const addCustomerForm     = document.getElementById('add-customer-form');
+  const newCustomerForm     = document.getElementById('new-customer-form');
+  const cancelNewCustomerBtn = document.getElementById('cancel-new-customer');
+
   // Quote elements
   const labelInput = document.getElementById('quote-label');
   const addLineBtn = document.getElementById('add-line');
@@ -181,6 +187,49 @@ if (location.pathname.endsWith('employee.html')) {
     else profileDiv.style.display = 'none';
   });
 
+  //────── Show/hide the add customer form ──────
+  addCustomerBtn.addEventListener('click', () => {
+    addCustomerForm.classList.remove('hidden');
+  });
+  cancelNewCustomerBtn.addEventListener('click', () => {
+    addCustomerForm.classList.add('hidden');
+  });
+
+  //────── Handle new customer form submission ──────
+  newCustomerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      name:    document.getElementById('new-cust-name').value.trim(),
+      phone:   document.getElementById('new-cust-phone').value.trim(),
+      address: document.getElementById('new-cust-address').value.trim(),
+      notes:   document.getElementById('new-cust-notes').value.trim()
+    };
+    if (!payload.name) {
+      alert('Name is required.');
+      return;
+    }
+    try {
+      const res = await fetch(apiCustomers, {
+        method:  'POST',
+        headers: {'Content-Type':'application/json'},
+        body:    JSON.stringify(payload)
+      });
+      if (res.ok) {
+        newCustomerForm.reset();
+        addCustomerForm.classList.add('hidden');
+        await loadCustomers();
+        const newCustomer = await res.json();
+        custSelect.value = newCustomer.id;
+        showCustomerProfile(newCustomer.id);
+      } else {
+        alert('Error adding customer.');
+      }
+    } catch (err) {
+      console.error('Error creating customer:', err);
+      alert('Failed to create customer.');
+    }
+  });
+
   //────── Initialize page ──────
   (async () => {
     await loadCustomers();
@@ -284,6 +333,15 @@ if (location.pathname.endsWith('employee.html')) {
   const panelQuotes  = document.getElementById('tab-quotes');
   const panelServices = document.getElementById('tab-services');
 
+  // KPIs
+  const kpiRevenue  = document.getElementById('kpi-revenue');
+  const kpiQuotes   = document.getElementById('kpi-quotes');
+  const kpiAvgValue = document.getElementById('kpi-avg-value');
+
+  // Chart
+  const chartCanvas = document.getElementById('revenue-chart');
+  let revenueChart  = null;
+
 
   // Quotes container
   const quotesDiv = document.getElementById('quotes-container');
@@ -380,6 +438,54 @@ async function renderQuotes() {
   }
 
   // ... the rest of your existing grouping/rendering logic goes here ...
+
+  // ─── KPI & Chart Rendering ──────────────────────────────────────────
+  const totalRevenue = filtered.reduce((sum, q) => {
+    return sum + q.quoteItems.reduce((s, i) => s + i.lineTotal, 0);
+  }, 0);
+  const totalQuotes = filtered.length;
+  const avgQuoteValue = totalQuotes > 0 ? totalRevenue / totalQuotes : 0;
+
+  kpiRevenue.textContent  = `${totalRevenue.toFixed(2)}`;
+  kpiQuotes.textContent   = totalQuotes;
+  kpiAvgValue.textContent = `${avgQuoteValue.toFixed(2)}`;
+
+  // Chart Data
+  const chartData = filtered.reduce((acc, q) => {
+    const date = new Date(q.createdAt).toLocaleDateString();
+    const quoteTotal = q.quoteItems.reduce((s, i) => s + i.lineTotal, 0);
+    acc[date] = (acc[date] || 0) + quoteTotal;
+    return acc;
+  }, {});
+
+  const chartLabels = Object.keys(chartData);
+  const chartValues = Object.values(chartData);
+
+  if (revenueChart) {
+    revenueChart.destroy();
+  }
+  revenueChart = new Chart(chartCanvas, {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: [{
+        label: 'Revenue',
+        data: chartValues,
+        borderColor: '#1DB954',
+        backgroundColor: 'rgba(29, 185, 84, 0.1)',
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
 
 
 
@@ -561,6 +667,11 @@ async function renderQuotes() {
   const tableBody      = document.querySelector('#customers-table tbody');
   const customerSearch = document.getElementById('customer-search');
 
+  // KPIs
+  const kpiTotalCustomers = document.getElementById('kpi-total-customers');
+  const kpiTotalQuotes    = document.getElementById('kpi-total-quotes');
+  const kpiTotalRevenue   = document.getElementById('kpi-total-revenue');
+
   const infoDiv                = document.getElementById('profile-display');
   const profileForm            = document.getElementById('profile-form');
   const editBtn                = document.getElementById('edit-profile');
@@ -627,6 +738,20 @@ async function renderQuotes() {
       if (!res.ok) throw new Error(res.status);
       customersList = await res.json();
       renderCustomers(customerSearch.value.trim());
+
+      // Calculate and render KPIs
+      const totalCustomers = customersList.length;
+      const totalQuotes = customersList.reduce((sum, c) => sum + c.quotes.length, 0);
+      const totalRevenue = customersList.reduce((sum, c) => {
+        return sum + c.quotes.reduce((qSum, q) => {
+          return qSum + q.quoteItems.reduce((iSum, i) => iSum + i.lineTotal, 0);
+        }, 0);
+      }, 0);
+
+      kpiTotalCustomers.textContent = totalCustomers;
+      kpiTotalQuotes.textContent = totalQuotes;
+      kpiTotalRevenue.textContent = `${totalRevenue.toFixed(2)}`;
+
     } catch (err) {
       console.error('Error loading customers:', err);
       tableBody.innerHTML = `

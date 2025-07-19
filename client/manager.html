@@ -14,6 +14,7 @@
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
   />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -28,12 +29,33 @@
 
   <!-- Manager Tabs -->
   <div id="manager-tabs" class="tabs">
-    <button data-tab="quotes" class="active">Quotes</button>
+    <button data-tab="quotes" class="active">Dashboard & Quotes</button>
     <button data-tab="services">Service Catalog</button>
   </div>
 
   <!-- Quotes Section -->
   <div id="tab-quotes">
+    <!-- KPIs -->
+    <div id="kpi-cards">
+      <div class="kpi-card">
+        <h3>Total Revenue</h3>
+        <p id="kpi-revenue">$0.00</p>
+      </div>
+      <div class="kpi-card">
+        <h3>Total Quotes</h3>
+        <p id="kpi-quotes">0</p>
+      </div>
+      <div class="kpi-card">
+        <h3>Average Quote Value</h3>
+        <p id="kpi-avg-value">$0.00</p>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas id="revenue-chart"></canvas>
+    </div>
+
     <!-- Filters + Clear -->
     <div id="manager-controls">
       <label>
@@ -119,5 +141,3 @@
 </body>
 </html>
 
-
-albert 
