@@ -86,23 +86,23 @@ if (location.pathname.endsWith('employee.html')) {
 
     tr.append(tdSearch, tdSelect, tdQty, tdRm);
 
-    // wire up auto‑match
+    // wire up live‑filter + top‑match auto‑select
     inpSearch.addEventListener('input', () => {
       const term = inpSearch.value.trim().toLowerCase();
-      const filteredServices = servicesList.filter(s =>
-        s.name.toLowerCase().includes(term)
-      );
-      sel.innerHTML =
-        '<option value="">-- Select service --</option>' +
-        filteredServices.map(s => {
-          const cost = typeof s.cost === 'number' ? s.cost.toFixed(2) : 'N/A';
-          return `<option value="${s.id}">${s.name} (${cost})</option>`;
-        }).join('');
-      if (filteredServices.some(s => String(s.id) === sel.value)) {
-        // Keep selected value if it's still in the filtered list
-      } else {
-        sel.value = ''; // Clear selection if not in filtered list
+      const servicesToDisplay = term === ''
+        ? servicesList
+        : servicesList.filter(s => s.name.toLowerCase().includes(term));
+
+      // 1) rebuild the dropdown to only matching services
+      populateServiceSelect(sel, servicesToDisplay);
+
+      // 2) auto‑select the very first match (if any)
+      if (servicesToDisplay.length > 0) {
+        sel.value = String(servicesToDisplay[0].id);
       }
+
+      // 3) update the running total
+      updateEstimatedTotal();
     });
 
     // Add event listeners for changes to update total
@@ -408,8 +408,10 @@ if (location.pathname.endsWith('employee.html')) {
       }
     });
 
-    const labels = Object.keys(serviceCounts);
-    const data = Object.values(serviceCounts);
+    const sortedServiceCounts = Object.entries(serviceCounts).sort(([, a], [, b]) => b - a);
+    const topN = 10; // Display top 10 services
+    const labels = sortedServiceCounts.slice(0, topN).map(([name,]) => name);
+    const data = sortedServiceCounts.slice(0, topN).map(([, count]) => count);
 
     if (serviceFrequencyChart) {
       serviceFrequencyChart.destroy();
@@ -505,8 +507,9 @@ if (location.pathname.endsWith('employee.html')) {
     });
 
     const sortedServices = Object.entries(serviceRevenue).sort(([,a],[,b]) => b - a);
-    const labels = sortedServices.map(([name,]) => name);
-    const data = sortedServices.map(([,revenue]) => revenue);
+    const topN = 10; // Display top 10 services
+    const labels = sortedServices.slice(0, topN).map(([name,]) => name);
+    const data = sortedServices.slice(0, topN).map(([,revenue]) => revenue);
 
     if (topServicesRevenueChart) {
       topServicesRevenueChart.destroy();
@@ -600,6 +603,7 @@ if (location.pathname.endsWith('employee.html')) {
     try {
       const res  = await fetch(apiCustomers);
       customersList = await res.json();
+      console.log('customersList after fetch:', customersList);
       const prev = custFilter.value;
       custFilter.innerHTML =
         '<option value="">All Customers</option>' +
@@ -626,6 +630,11 @@ if (location.pathname.endsWith('employee.html')) {
     try {
       const res = await fetch(apiQuotes);
       allQuotes = await res.json();
+      console.log('allQuotes before customer mapping:', allQuotes);
+      allQuotes.forEach(q => {
+        q.customer = customersList.find(c => c.id === q.customerId);
+      });
+      console.log('allQuotes after customer mapping:', allQuotes);
       populateLabelFilter();
       renderQuotes();
     } catch (err) {
