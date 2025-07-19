@@ -103,7 +103,6 @@ if (location.pathname.endsWith('employee.html')) {
       } else {
         sel.value = ''; // Clear selection if not in filtered list
       }
-      populateServiceSelect(sel, filteredServices);
     });
 
     // Add event listeners for changes to update total
@@ -752,6 +751,35 @@ async function renderQuotes() {
         showCustomerProfile(customer);
       });
     });
+
+    // Attach event listeners for the status change
+    document.querySelectorAll('.quote-status-select').forEach(select => {
+      select.addEventListener('change', async (e) => {
+        const quoteId = e.target.dataset.id;
+        const newStatus = e.target.value;
+        try {
+          const res = await fetch(`${apiQuotes}/${quoteId}`, {
+            method: 'PUT',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ status: newStatus })
+          });
+          if (res.ok) {
+            // Update local data and re-render everything
+            const updatedQuote = await res.json();
+            const index = allQuotes.findIndex(q => q.id == quoteId);
+            if (index !== -1) {
+              allQuotes[index].status = updatedQuote.status;
+            }
+            renderQuotes();
+          } else {
+            alert('Failed to update quote status.');
+          }
+        } catch (err) {
+          console.error('Error updating quote status:', err);
+          alert('Failed to update quote status.');
+        }
+      });
+    });
   }
 
   function showCustomerProfile(customer) {
@@ -869,37 +897,6 @@ async function renderQuotes() {
           const id = btn.dataset.id;
           await fetch(`${apiServices}/${id}`, { method:'DELETE' });
           loadServices();
-        });
-      });
-
-      // Attach Quote Status Change handlers
-      document.querySelectorAll('.quote-status-select').forEach(select => {
-        select.addEventListener('change', async (e) => {
-          const quoteId = e.target.dataset.id;
-          const newStatus = e.target.value;
-          try {
-            const res = await fetch(`${apiQuotes}/${quoteId}`, {
-              method: 'PUT',
-              headers: {'Content-Type':'application/json'},
-              body: JSON.stringify({ status: newStatus })
-            });
-            if (res.ok) {
-              // Update local data and re-render charts
-              const updatedQuote = await res.json();
-              const index = allQuotes.findIndex(q => q.id == quoteId);
-              if (index !== -1) {
-                allQuotes[index].status = updatedQuote.status;
-              }
-              renderServiceFrequencyChart();
-              renderQuoteStatusChart();
-              renderTopServicesRevenueChart();
-            } else {
-              alert('Failed to update quote status.');
-            }
-          } catch (err) {
-            console.error('Error updating quote status:', err);
-            alert('Failed to update quote status.');
-          }
         });
       });
     } catch (err) {
