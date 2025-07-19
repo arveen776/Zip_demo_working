@@ -411,10 +411,18 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
 }
 
 /* Analytics Section Specific Styles */
+#tab-analytics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
 #tab-analytics h2 {
+  grid-column: 1 / -1;
+  text-align: center;
   margin-bottom: 1.5rem;
   color: var(--color-secondary);
-  text-align: center;
 }
 
 #tab-analytics .chart-container {
@@ -422,7 +430,6 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   padding: 2rem;
   border-radius: var(--radius);
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-  margin-bottom: 1.5rem;
   position: relative;
   height: 400px;
   display: flex;
@@ -440,16 +447,6 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   text-align: center;
   margin-bottom: 1rem;
   color: var(--color-primary);
-}
-
-#tab-analytics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
-  padding: 1.5rem;
-  background-color: var(--color-bg);
-  border-radius: var(--radius);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
 /* Customer KPIs */

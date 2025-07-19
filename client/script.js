@@ -272,9 +272,6 @@ if (location.pathname.endsWith('employee.html')) {
     linesBody.appendChild(newLineRow());
   })();
 
-  // Keep dropdowns fresh
-  setInterval(loadCustomers, 5000);
-  setInterval(loadServices, 5000);
   updateEstimatedTotal(); // Initial calculation
 
   // "+ Add Service" button
@@ -395,6 +392,7 @@ if (location.pathname.endsWith('employee.html')) {
   let serviceFrequencyChart = null;
   let quoteStatusChart = null;
   let topServicesRevenueChart = null;
+  let quotesPerCustomerChart = null;
 
   // Function to render service frequency chart
   function renderServiceFrequencyChart() {
@@ -535,6 +533,55 @@ if (location.pathname.endsWith('employee.html')) {
             beginAtZero: true
           }
         }
+      }
+    });
+  }
+
+  // Function to render quotes per customer chart
+  function renderQuotesPerCustomerChart() {
+    const customerQuotes = {};
+    allQuotes.forEach(quote => {
+      const customerName = quote.customer?.name || 'Unknown';
+      customerQuotes[customerName] = (customerQuotes[customerName] || 0) + 1;
+    });
+
+    const labels = Object.keys(customerQuotes);
+    const data = Object.values(customerQuotes);
+
+    if (quotesPerCustomerChart) {
+      quotesPerCustomerChart.destroy();
+    }
+
+    const ctx = document.getElementById('quotes-per-customer-chart').getContext('2d');
+    quotesPerCustomerChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Quotes',
+          data: data,
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(153, 102, 255, 0.6)',
+            'rgba(255, 159, 64, 0.6)'
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
       }
     });
   }
@@ -848,6 +895,7 @@ async function renderQuotes() {
         renderServiceFrequencyChart();
         renderQuoteStatusChart();
         renderTopServicesRevenueChart();
+        renderQuotesPerCustomerChart();
       }
     });
   });
@@ -855,7 +903,6 @@ async function renderQuotes() {
 
   // Initial load & polling
   loadCustomerFilter().then(fetchQuotes);
-  setInterval(fetchQuotes, 5000);
 
   // ─── SERVICE CATALOG CRUD ─────────────────────────────────────────────────
   async function loadServices() {
@@ -923,9 +970,8 @@ async function renderQuotes() {
     loadServices();
   });
 
-  // Initial load & polling for services
+  // Initial load for services
   loadServices();
-  setInterval(loadServices, 5000);
 
 
 
