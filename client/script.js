@@ -2,6 +2,32 @@
 // client/script.js
 // -----------------------------------
 
+// ─── THEME SWITCHER ───────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const themeSwitcher = document.getElementById('theme-switcher');
+  const currentTheme = localStorage.getItem('theme') || 'light';
+
+  document.documentElement.setAttribute('data-theme', currentTheme);
+
+  if (currentTheme === 'dark') {
+    themeSwitcher.textContent = '☀️';
+  }
+
+  themeSwitcher.addEventListener('click', () => {
+    let theme = document.documentElement.getAttribute('data-theme');
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('theme', 'light');
+      themeSwitcher.textContent = '🌙';
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+      themeSwitcher.textContent = '☀️';
+    }
+  });
+});
+
+
 // API endpoints
 const apiCustomers = '/api/customers';
 const apiQuotes    = '/api/quotes';

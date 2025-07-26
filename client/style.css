@@ -2,6 +2,52 @@
 
 /* ─── THEME VARIABLES ──────────────────────────────────────────────────────────── */
 :root {
+  --color-primary: #1DB954;
+  --color-secondary: #002B5B;
+  --color-bg: #F9F9F9;
+  --color-surface: #FFFFFF;
+  --color-border: #E0E0E0;
+  --color-text: #333333;
+  --color-text-light: #666666;
+  --radius: 0.5rem;
+  --transition: 0.3s;
+}
+
+:root[data-theme="dark"] {
+  --color-primary: #1DB954;
+  --color-secondary: #55aaff;
+  --color-bg: #121212;
+  --color-surface: #1e1e1e;
+  --color-border: #333333;
+  --color-text: #e0e0e0;
+  --color-text-light: #a0a0a0;
+}
+
+/* ─── THEME SWITCHER ─────────────────────────────────────────────────────────── */
+.theme-switcher {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 1001;
+  transition: background-color var(--transition), color var(--transition);
+}
+.theme-switcher:hover {
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+}
+
+:root[data-theme="dark"] {
+
   /* Brand Colors */
   --color-primary: #1DB954;      /* Magnum Electric green */
   --color-secondary: #002B5B;    /* Deep navy accent */
