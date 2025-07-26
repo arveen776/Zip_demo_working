@@ -46,19 +46,7 @@
   color: var(--color-surface);
 }
 
-:root[data-theme="dark"] {
 
-  /* Brand Colors */
-  --color-primary: #1DB954;      /* Magnum Electric green */
-  --color-secondary: #002B5B;    /* Deep navy accent */
-  --color-bg: #F9F9F9;           /* Light background */
-  --color-surface: #FFFFFF;      /* Card and surface */
-  --color-border: #E0E0E0;       /* Subtle borders */
-  --color-text: #333333;         /* Primary text */
-  --color-text-light: #666666;   /* Secondary text */
-  --radius: 0.5rem;
-  --transition: 0.3s;
-}
 
 /* ─── RESET & BASE ───────────────────────────────────────────────────────────── */
 * {
