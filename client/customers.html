@@ -70,6 +70,39 @@
           <textarea id="cust-notes"></textarea>
         </label>
       </div>
+      
+      <!-- Appointment Section -->
+      <div class="appointment-section-header">
+        <h3>Schedule Initial Appointment</h3>
+        <label class="checkbox-label">
+          <input type="checkbox" id="schedule-appointment" />
+          Schedule appointment for this customer
+        </label>
+      </div>
+      
+      <div id="appointment-fields" class="appointment-fields hidden">
+        <div>
+          <label>Appointment Date<br/>
+            <input type="date" id="cust-appointment-date" />
+          </label>
+        </div>
+        <div>
+          <label>Appointment Time<br/>
+            <input type="time" id="cust-appointment-time" />
+          </label>
+        </div>
+        <div>
+          <label>Duration (minutes)<br/>
+            <input type="number" id="cust-appointment-duration" min="15" max="480" value="60" />
+          </label>
+        </div>
+        <div>
+          <label>Appointment Notes<br/>
+            <textarea id="cust-appointment-notes"></textarea>
+          </label>
+        </div>
+      </div>
+      
       <button type="submit" class="add-customer-btn">
         Add Customer
       </button>
@@ -97,8 +130,8 @@
           <th>Notes</th>
           <th>Total Spending</th>
           <th>Last Quote Date</th>
+          <th>Next Appointment</th>
           <th>Actions</th>
-          <th>Status</th>
         </tr>
       </thead>
       <tbody><!-- JS injects here --></tbody>
@@ -121,6 +154,47 @@
         <button type="submit">Save</button>
         <button type="button" id="cancel-profile" class="secondary">Cancel</button>
       </form>
+    </div>
+
+    <h3>Appointments</h3>
+    <div class="appointments-section">
+      <button id="add-appointment-btn" class="add-appointment-btn">
+        + Schedule New Appointment
+      </button>
+      
+      <div id="add-appointment-form" class="add-appointment-form hidden">
+        <h4>Schedule Appointment</h4>
+        <form id="appointment-form">
+          <label>Date<br/>
+            <input type="date" id="appointment-date" required />
+          </label>
+          <label>Time<br/>
+            <input type="time" id="appointment-time" required />
+          </label>
+          <label>Duration (minutes)<br/>
+            <input type="number" id="appointment-duration" min="15" max="480" value="60" />
+          </label>
+          <label>Notes<br/>
+            <textarea id="appointment-notes"></textarea>
+          </label>
+          <button type="submit">Schedule Appointment</button>
+          <button type="button" id="cancel-appointment" class="secondary">Cancel</button>
+        </form>
+      </div>
+
+      <table id="detail-appointments" class="detail-appointments-table">
+        <thead class="detail-appointments-header">
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody><!-- JS injects here --></tbody>
+      </table>
     </div>
 
     <h3>Quotes</h3>

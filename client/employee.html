@@ -32,6 +32,30 @@
 
   <h1>Request a Quote</h1>
 
+  <!-- Upcoming Appointments Display -->
+  <div class="upcoming-appointments-section">
+    <div class="appointments-header">
+      <h2><i class="fas fa-calendar-alt"></i> Today's Schedule</h2>
+      <div class="appointments-controls">
+        <button id="refresh-appointments" class="refresh-btn">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        <select id="appointment-filter">
+          <option value="today">Today</option>
+          <option value="tomorrow">Tomorrow</option>
+          <option value="week">This Week</option>
+          <option value="all">All Upcoming</option>
+        </select>
+      </div>
+    </div>
+    
+    <div id="appointments-container" class="appointments-container">
+      <div class="loading-appointments">
+        <i class="fas fa-spinner fa-spin"></i> Loading appointments...
+      </div>
+    </div>
+  </div>
+
   <!-- 1) Customer Search & Selector -->
   <label class="form-label-block">
     Customer Search<br/>
@@ -76,6 +100,12 @@
     <p><strong>Phone:</strong> <span id="profile-phone"></span></p>
     <p><strong>Address:</strong> <span id="profile-address"></span></p>
     <p><strong>Notes:</strong> <span id="profile-notes"></span></p>
+    <div id="next-appointment" class="next-appointment-section">
+      <h4>Next Appointment</h4>
+      <div id="appointment-info" class="appointment-info">
+        <!-- Appointment info will be populated by JavaScript -->
+      </div>
+    </div>
   </div>
 
   <!-- 2) Quote Label -->

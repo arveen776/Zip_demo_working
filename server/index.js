@@ -24,8 +24,8 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/employee.html'));
 });
 
-// Catch-all for direct access to HTML pages (employee, manager, customers)
-app.get('/:page(employee|manager|customers)\.html', (req, res) => {
+// Catch-all for direct access to HTML pages (employee, manager, customers, test-appointments)
+app.get('/:page(employee|manager|customers|test-appointments)\.html', (req, res) => {
   res.sendFile(path.join(__dirname, '../client', `${req.params.page}.html`));
 });
 
@@ -190,10 +190,131 @@ app.delete('/api/customers/:id', async (req, res) => {
   try {
     await prisma.quoteItem.deleteMany({ where: { quote: { customerId: id } }});
     await prisma.quote.deleteMany({ where: { customerId: id }});
+    await prisma.appointment.deleteMany({ where: { customerId: id }});
     await prisma.customer.delete({ where: { id }});
     return res.sendStatus(204);
   } catch (err) {
     console.error('Error deleting customer:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ─── APPOINTMENT CRUD ─────────────────────────────────────────────────────────────
+app.get('/api/appointments', async (req, res) => {
+  try {
+    const appointments = await prisma.appointment.findMany({
+      include: { customer: true },
+      orderBy: { date: 'asc' }
+    });
+    return res.json(appointments);
+  } catch (err) {
+    console.error('Error fetching appointments:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/appointments/customer/:customerId', async (req, res) => {
+  const customerId = Number(req.params.customerId);
+  try {
+    const appointments = await prisma.appointment.findMany({
+      where: { customerId },
+      include: { customer: true },
+      orderBy: { date: 'asc' }
+    });
+    return res.json(appointments);
+  } catch (err) {
+    console.error('Error fetching customer appointments:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/appointments/next/:customerId', async (req, res) => {
+  const customerId = Number(req.params.customerId);
+  try {
+    // Create today's date at midnight in local timezone
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    const nextAppointment = await prisma.appointment.findFirst({
+      where: { 
+        customerId,
+        date: { gte: todayStart },
+        status: { in: ['Scheduled'] }
+      },
+      include: { customer: true },
+      orderBy: { date: 'asc' }
+    });
+    return res.json(nextAppointment);
+  } catch (err) {
+    console.error('Error fetching next appointment:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/appointments', async (req, res) => {
+  try {
+    const { customerId, date, time, duration, notes } = req.body;
+    if (!customerId || !date || !time) {
+      return res.status(400).json({ error: 'Customer ID, date, and time are required' });
+    }
+
+    // Fix timezone issue by creating date in local timezone
+    const [year, month, day] = date.split('-').map(Number);
+    const localDate = new Date(year, month - 1, day); // month is 0-indexed
+    
+    const appointment = await prisma.appointment.create({
+      data: {
+        customerId: Number(customerId),
+        date: localDate,
+        time: time,
+        duration: duration || 60,
+        notes: notes || null
+      },
+      include: { customer: true }
+    });
+    return res.status(201).json(appointment);
+  } catch (err) {
+    console.error('Error creating appointment:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/appointments/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const { date, time, duration, notes, status } = req.body;
+  try {
+    // Fix timezone issue by creating date in local timezone
+    let localDate = undefined;
+    if (date) {
+      const [year, month, day] = date.split('-').map(Number);
+      localDate = new Date(year, month - 1, day); // month is 0-indexed
+    }
+    
+    const appointment = await prisma.appointment.update({
+      where: { id },
+      data: {
+        date: localDate,
+        time: time || undefined,
+        duration: duration || undefined,
+        notes: notes !== undefined ? notes : undefined,
+        status: status || undefined
+      },
+      include: { customer: true }
+    });
+    return res.json(appointment);
+  } catch (err) {
+    console.error('Error updating appointment:', err);
+    return res.status(404).json({ error: 'Appointment not found' });
+  }
+});
+
+app.delete('/api/appointments/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    await prisma.appointment.delete({ where: { id } });
+    return res.sendStatus(204);
+  } catch (err) {
+    console.error('Error deleting appointment:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -242,6 +363,75 @@ app.put('/api/quotes/:id', async (req, res) => {
   }
 });
 
+
+// ─── DATABASE CHECK ENDPOINT ───────────────────────────────────────────────────
+app.get('/api/db-check', async (req, res) => {
+  try {
+    // Check if appointment table exists by trying to query it
+    const appointments = await prisma.appointment.findMany({ take: 1 });
+    res.json({ 
+      status: 'success', 
+      message: 'Appointment table exists and is accessible',
+      appointmentCount: await prisma.appointment.count()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Appointment table not accessible',
+      error: error.message 
+    });
+  }
+});
+
+// ─── DEBUG ENDPOINT FOR APPOINTMENTS ───────────────────────────────────────────
+app.get('/api/debug/appointments/:customerId', async (req, res) => {
+  const customerId = Number(req.params.customerId);
+  try {
+    const allAppointments = await prisma.appointment.findMany({
+      where: { customerId },
+      include: { customer: true },
+      orderBy: { date: 'asc' }
+    });
+    
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    const nextAppointment = await prisma.appointment.findFirst({
+      where: { 
+        customerId,
+        date: { gte: todayStart },
+        status: { in: ['Scheduled'] }
+      },
+      include: { customer: true },
+      orderBy: { date: 'asc' }
+    });
+    
+    res.json({
+      customerId,
+      todayStart: todayStart.toISOString(),
+      allAppointments: allAppointments.map(apt => ({
+        id: apt.id,
+        date: apt.date.toISOString(),
+        time: apt.time,
+        status: apt.status,
+        customerName: apt.customer.name
+      })),
+      nextAppointment: nextAppointment ? {
+        id: nextAppointment.id,
+        date: nextAppointment.date.toISOString(),
+        time: nextAppointment.time,
+        status: nextAppointment.status,
+        customerName: nextAppointment.customer.name
+      } : null
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Debug endpoint error',
+      error: error.message 
+    });
+  }
+});
 
 // ─── START SERVER ───────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 4000;

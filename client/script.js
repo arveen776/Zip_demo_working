@@ -39,6 +39,11 @@ if (location.pathname.endsWith('employee.html')) {
   const estimatedTotalSpan = document.getElementById('estimated-total');
   const clearQuoteBtn = document.getElementById('clear-quote');
 
+  // Appointment display elements
+  const refreshAppointmentsBtn = document.getElementById('refresh-appointments');
+  const appointmentFilter = document.getElementById('appointment-filter');
+  const appointmentsContainer = document.getElementById('appointments-container');
+
   // In‑memory lists
   let customersList = [];
   let servicesList  = [];
@@ -168,12 +173,15 @@ if (location.pathname.endsWith('employee.html')) {
   }
 
   //────── Show profile panel for a given customer id ──────
-  function showCustomerProfile(customer) {
+  async function showCustomerProfile(customer) {
     pName.textContent    = customer.name;
     pPhone.textContent   = customer.phone   || '–';
     pAddress.textContent = customer.address || '–';
     pNotes.textContent   = customer.notes   || '';
     profileDiv.classList.remove('hidden');
+    
+    // Load next appointment for this customer
+    await loadNextAppointment(customer.id);
   }
 
   //────── Bind the customer‑search input to auto‑select + show profile ──────
@@ -209,6 +217,41 @@ if (location.pathname.endsWith('employee.html')) {
       updateEstimatedTotal(); // Update total after services are loaded
     } catch (err) {
       console.error('Error loading services:', err);
+    }
+  }
+
+  //────── Load next appointment for a customer ──────
+  async function loadNextAppointment(customerId) {
+    try {
+      const res = await fetch(`/api/appointments/next/${customerId}`);
+      if (!res.ok) throw new Error(res.status);
+      const appointment = await res.json();
+      
+      console.log('Next appointment response:', appointment); // Debug log
+      
+      const appointmentInfo = document.getElementById('appointment-info');
+      if (appointment) {
+        const date = new Date(appointment.date).toLocaleDateString();
+        const time = appointment.time;
+        const duration = `${appointment.duration} min`;
+        const notes = appointment.notes || '';
+        
+        appointmentInfo.innerHTML = `
+          <p><strong>Date:</strong> ${date}</p>
+          <p><strong>Time:</strong> ${time}</p>
+          <p><strong>Duration:</strong> ${duration}</p>
+          ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+        `;
+        appointmentInfo.classList.remove('no-appointment');
+      } else {
+        appointmentInfo.innerHTML = '<p>No upcoming appointments scheduled</p>';
+        appointmentInfo.classList.add('no-appointment');
+      }
+    } catch (err) {
+      console.error('Error loading next appointment:', err);
+      const appointmentInfo = document.getElementById('appointment-info');
+      appointmentInfo.innerHTML = '<p>Unable to load appointment information</p>';
+      appointmentInfo.classList.add('no-appointment');
     }
   }
 
@@ -265,14 +308,195 @@ if (location.pathname.endsWith('employee.html')) {
     }
   });
 
+  //────── Load and display upcoming appointments ──────
+  async function loadUpcomingAppointments() {
+    try {
+      appointmentsContainer.innerHTML = `
+        <div class="loading-appointments">
+          <i class="fas fa-spinner fa-spin"></i> Loading appointments...
+        </div>
+      `;
+
+      const res = await fetch('/api/appointments');
+      if (!res.ok) throw new Error(res.status);
+      const allAppointments = await res.json();
+
+      // Filter appointments based on current filter
+      const filterValue = appointmentFilter.value;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      let filteredAppointments = allAppointments.filter(apt => {
+        // Fix timezone issue by creating date in local timezone
+        const aptDate = new Date(apt.date);
+        const localAptDate = new Date(aptDate.getFullYear(), aptDate.getMonth(), aptDate.getDate());
+        
+        switch (filterValue) {
+          case 'today':
+            return localAptDate.getTime() === today.getTime() && apt.status === 'Scheduled';
+          case 'tomorrow':
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            return localAptDate.getTime() === tomorrow.getTime() && apt.status === 'Scheduled';
+          case 'week':
+            const weekFromNow = new Date(today);
+            weekFromNow.setDate(weekFromNow.getDate() + 7);
+            return localAptDate >= today && localAptDate <= weekFromNow && apt.status === 'Scheduled';
+          case 'all':
+            return localAptDate >= today && apt.status === 'Scheduled';
+          default:
+            return localAptDate.getTime() === today.getTime() && apt.status === 'Scheduled';
+        }
+      });
+
+      // Sort by date and time
+      filteredAppointments.sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.time}`);
+        const dateB = new Date(`${b.date}T${b.time}`);
+        return dateA - dateB;
+      });
+
+      if (filteredAppointments.length === 0) {
+        appointmentsContainer.innerHTML = `
+          <div class="no-appointments">
+            <i class="fas fa-calendar-times"></i>
+            <p>No appointments found for the selected period.</p>
+          </div>
+        `;
+        return;
+      }
+
+              const appointmentsHTML = filteredAppointments.map(apt => {
+          // Fix timezone issue by creating date in local timezone
+          const aptDate = new Date(apt.date);
+          const localAptDate = new Date(aptDate.getFullYear(), aptDate.getMonth(), aptDate.getDate());
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          let cardClass = 'appointment-card';
+          if (localAptDate.getTime() === today.getTime()) {
+            cardClass += ' today';
+          } else if (localAptDate.getTime() === today.getTime() + 86400000) { // tomorrow
+            cardClass += ' upcoming';
+          }
+
+        const dateStr = new Date(apt.date).toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
+        });
+
+        return `
+          <div class="${cardClass}" data-customer-id="${apt.customerId}">
+            <span class="appointment-status-badge ${apt.status.toLowerCase()}">${apt.status}</span>
+            <div class="appointment-header">
+              <div class="appointment-time">${apt.time}</div>
+              <div class="appointment-date">${dateStr}</div>
+            </div>
+            <div class="appointment-customer">${apt.customer.name}</div>
+            <div class="appointment-details">
+              <strong>Duration:</strong> ${apt.duration} minutes<br>
+              <strong>Phone:</strong> ${apt.customer.phone || 'N/A'}
+            </div>
+            ${apt.notes ? `<div class="appointment-notes">${apt.notes}</div>` : ''}
+            <div class="appointment-actions">
+              <button class="view-customer" onclick="selectCustomerForQuote(${apt.customerId})">
+                <i class="fas fa-user"></i> Select Customer
+              </button>
+              <button class="mark-complete" onclick="markAppointmentComplete(${apt.id})">
+                <i class="fas fa-check"></i> Complete
+              </button>
+              <button class="cancel-appointment" onclick="cancelAppointment(${apt.id})">
+                <i class="fas fa-times"></i> Cancel
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      appointmentsContainer.innerHTML = `
+        <div class="appointments-grid">
+          ${appointmentsHTML}
+        </div>
+      `;
+
+    } catch (err) {
+      console.error('Error loading appointments:', err);
+      appointmentsContainer.innerHTML = `
+        <div class="no-appointments">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Failed to load appointments. Please try again.</p>
+        </div>
+      `;
+    }
+  }
+
+  //────── Appointment action functions ──────
+  window.selectCustomerForQuote = function(customerId) {
+    custSelect.value = customerId;
+    const selectedCustomer = customersList.find(c => c.id === customerId);
+    if (selectedCustomer) {
+      showCustomerProfile(selectedCustomer);
+    }
+    // Scroll to quote section
+    document.getElementById('quote-label').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.markAppointmentComplete = async function(appointmentId) {
+    if (!confirm('Mark this appointment as completed?')) return;
+    
+    try {
+      const res = await fetch(`/api/appointments/${appointmentId}`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ status: 'Completed' })
+      });
+      
+      if (res.ok) {
+        loadUpcomingAppointments();
+      } else {
+        alert('Failed to update appointment status.');
+      }
+    } catch (err) {
+      console.error('Error updating appointment:', err);
+      alert('Failed to update appointment status.');
+    }
+  };
+
+  window.cancelAppointment = async function(appointmentId) {
+    if (!confirm('Cancel this appointment?')) return;
+    
+    try {
+      const res = await fetch(`/api/appointments/${appointmentId}`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ status: 'Cancelled' })
+      });
+      
+      if (res.ok) {
+        loadUpcomingAppointments();
+      } else {
+        alert('Failed to cancel appointment.');
+      }
+    } catch (err) {
+      console.error('Error cancelling appointment:', err);
+      alert('Failed to cancel appointment.');
+    }
+  };
+
   //────── Initialize page ──────
   (async () => {
     await loadCustomers();
     await loadServices();
     linesBody.appendChild(newLineRow());
+    await loadUpcomingAppointments();
   })();
 
   updateEstimatedTotal(); // Initial calculation
+
+  // Appointment display event listeners
+  refreshAppointmentsBtn.addEventListener('click', loadUpcomingAppointments);
+  appointmentFilter.addEventListener('change', loadUpcomingAppointments);
 
   // "+ Add Service" button
   addLineBtn.addEventListener('click', () => {
@@ -1010,6 +1234,32 @@ async function renderQuotes() {
   const closeQuoteDetailBtn    = document.getElementById('close-quote-detail');
   const backBtn                = document.getElementById('back-to-list');
 
+  // Appointment elements (for customer detail view)
+  const addAppointmentBtn      = document.getElementById('add-appointment-btn');
+  const addAppointmentForm     = document.getElementById('add-appointment-form');
+  const appointmentForm        = document.getElementById('appointment-form');
+  const cancelAppointmentBtn   = document.getElementById('cancel-appointment');
+  const appointmentsTableBody  = document.querySelector('#detail-appointments tbody');
+
+  // Appointment elements (for customer creation form)
+  const scheduleAppointmentCheckbox = document.getElementById('schedule-appointment');
+  const appointmentFields = document.getElementById('appointment-fields');
+  const custAppointmentDate = document.getElementById('cust-appointment-date');
+  const custAppointmentTime = document.getElementById('cust-appointment-time');
+  const custAppointmentDuration = document.getElementById('cust-appointment-duration');
+  const custAppointmentNotes = document.getElementById('cust-appointment-notes');
+
+  // Debug: Check if appointment elements exist
+  console.log('Appointment elements found:', {
+    addAppointmentBtn: !!addAppointmentBtn,
+    addAppointmentForm: !!addAppointmentForm,
+    appointmentForm: !!appointmentForm,
+    cancelAppointmentBtn: !!cancelAppointmentBtn,
+    appointmentsTableBody: !!appointmentsTableBody,
+    scheduleAppointmentCheckbox: !!scheduleAppointmentCheckbox,
+    appointmentFields: !!appointmentFields
+  });
+
   let customersList = [];
   let currentCust   = null;
 
@@ -1035,6 +1285,15 @@ async function renderQuotes() {
         const lastQuoteDate = c.quotes.length > 0
           ? new Date(Math.max(...c.quotes.map(q => new Date(q.createdAt)))).toLocaleDateString()
           : 'N/A';
+        
+        // Format next appointment
+        let nextAppointmentText = 'None';
+        if (c.nextAppointment) {
+          const date = new Date(c.nextAppointment.date).toLocaleDateString();
+          const time = c.nextAppointment.time;
+          nextAppointmentText = `${date} at ${time}`;
+        }
+        
         return `
           <tr>
             <td>${c.id}</td>
@@ -1044,6 +1303,7 @@ async function renderQuotes() {
             <td>${c.notes || ''}</td>
             <td>${totalSpending.toFixed(2)}</td>
             <td>${lastQuoteDate}</td>
+            <td>${nextAppointmentText}</td>
             <td>
               <button class="view-cust" data-id="${c.id}">View</button>
               <button class="del-cust"  data-id="${c.id}">Delete</button>
@@ -1073,6 +1333,24 @@ async function renderQuotes() {
       const res = await fetch('/api/customers');
       if (!res.ok) throw new Error(res.status);
       customersList = await res.json();
+      
+      // Fetch next appointments for all customers
+      const customersWithAppointments = await Promise.all(
+        customersList.map(async (customer) => {
+          try {
+            const appointmentRes = await fetch(`/api/appointments/next/${customer.id}`);
+            if (appointmentRes.ok) {
+              const nextAppointment = await appointmentRes.json();
+              return { ...customer, nextAppointment };
+            }
+          } catch (err) {
+            console.error(`Error fetching appointment for customer ${customer.id}:`, err);
+          }
+          return { ...customer, nextAppointment: null };
+        })
+      );
+      
+      customersList = customersWithAppointments;
       renderCustomers(customerSearch.value.trim());
 
       // Calculate and render KPIs
@@ -1092,7 +1370,7 @@ async function renderQuotes() {
       console.error('Error loading customers:', err);
       tableBody.innerHTML = `
         <tr>
-          <td colspan="7" style="text-align:center; padding:1rem; color:red;">
+          <td colspan="8" style="text-align:center; padding:1rem; color:red;">
             Failed to load customers.
           </td>
         </tr>`;
@@ -1103,6 +1381,19 @@ async function renderQuotes() {
   customerSearch.addEventListener('input', e =>
     renderCustomers(e.target.value.trim())
   );
+
+  // ── Appointment checkbox handler ─────────────────────────────────────
+  if (scheduleAppointmentCheckbox) {
+    scheduleAppointmentCheckbox.addEventListener('change', () => {
+      if (scheduleAppointmentCheckbox.checked) {
+        appointmentFields.classList.remove('hidden');
+        // Set default date to today
+        custAppointmentDate.value = new Date().toISOString().split('T')[0];
+      } else {
+        appointmentFields.classList.add('hidden');
+      }
+    });
+  }
 
   // ── Add‐Customer form ────────────────────────────────────────────────
   custForm.addEventListener('submit', async e => {
@@ -1117,15 +1408,72 @@ async function renderQuotes() {
       alert('Name is required.');
       return;
     }
-    const res = await fetch('/api/customers', {
-      method:  'POST',
-      headers: {'Content-Type':'application/json'},
-      body:    JSON.stringify(payload)
-    });
-    if (res.ok) {
+
+    // Check if appointment should be scheduled
+    const shouldScheduleAppointment = scheduleAppointmentCheckbox && scheduleAppointmentCheckbox.checked;
+    let appointmentData = null;
+
+    if (shouldScheduleAppointment) {
+      const appointmentDate = custAppointmentDate.value;
+      const appointmentTime = custAppointmentTime.value;
+      
+      if (!appointmentDate || !appointmentTime) {
+        alert('Please fill in both appointment date and time.');
+        return;
+      }
+
+      appointmentData = {
+        date: appointmentDate,
+        time: appointmentTime,
+        duration: parseInt(custAppointmentDuration.value) || 60,
+        notes: custAppointmentNotes.value.trim()
+      };
+    }
+
+    try {
+      // First create the customer
+      const customerRes = await fetch('/api/customers', {
+        method:  'POST',
+        headers: {'Content-Type':'application/json'},
+        body:    JSON.stringify(payload)
+      });
+      
+      if (!customerRes.ok) {
+        alert('Error adding customer.');
+        return;
+      }
+
+      const newCustomer = await customerRes.json();
+
+      // If appointment data exists, create the appointment
+      if (appointmentData) {
+        const appointmentRes = await fetch('/api/appointments', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            customerId: newCustomer.id,
+            ...appointmentData
+          })
+        });
+
+        if (appointmentRes.ok) {
+          alert(`Customer created successfully with appointment scheduled for ${appointmentData.date} at ${appointmentData.time}!`);
+        } else {
+          alert('Customer created but failed to schedule appointment.');
+        }
+      } else {
+        alert('Customer created successfully!');
+      }
+
+      // Reset form
       custForm.reset();
+      if (scheduleAppointmentCheckbox) {
+        scheduleAppointmentCheckbox.checked = false;
+        appointmentFields.classList.add('hidden');
+      }
       await loadCustomers();
-    } else {
+    } catch (err) {
+      console.error('Error creating customer:', err);
       alert('Error adding customer.');
     }
   });
@@ -1213,6 +1561,9 @@ async function renderQuotes() {
           }
         });
       });
+
+      // Load and display appointments
+      await loadAppointments();
     } catch (err) {
       console.error('Error fetching customer detail:', err);
     }
@@ -1285,6 +1636,142 @@ async function renderQuotes() {
     if (res.ok) showDetail(currentCust.id);
     else alert('Error updating quote label.');
   }
+
+  // ── Appointment Functions ────────────────────────────────────────────────
+  async function loadAppointments() {
+    try {
+      const res = await fetch(`/api/appointments/customer/${currentCust.id}`);
+      if (!res.ok) throw new Error(res.status);
+      const appointments = await res.json();
+      
+      if (appointments.length === 0) {
+        appointmentsTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; padding:1rem; color:#666;">
+              No appointments scheduled
+            </td>
+          </tr>`;
+      } else {
+        appointmentsTableBody.innerHTML = appointments.map(apt => {
+          const date = new Date(apt.date).toLocaleDateString();
+          const time = apt.time;
+          const duration = `${apt.duration} min`;
+          const status = apt.status;
+          const notes = apt.notes || '';
+          
+          return `
+            <tr>
+              <td>${date}</td>
+              <td>${time}</td>
+              <td>${duration}</td>
+              <td><span class="appointment-status ${status.toLowerCase()}">${status}</span></td>
+              <td>${notes}</td>
+              <td>
+                <button class="edit-appointment" data-id="${apt.id}">Edit</button>
+                <button class="delete-appointment" data-id="${apt.id}">Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Attach appointment handlers
+        document.querySelectorAll('.edit-appointment').forEach(btn =>
+          btn.addEventListener('click', () => editAppointment(btn.dataset.id))
+        );
+        document.querySelectorAll('.delete-appointment').forEach(btn =>
+          btn.addEventListener('click', () => deleteAppointment(btn.dataset.id))
+        );
+      }
+    } catch (err) {
+      console.error('Error loading appointments:', err);
+      appointmentsTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center; padding:1rem; color:red;">
+            Failed to load appointments
+          </td>
+        </tr>`;
+    }
+  }
+
+  async function editAppointment(appointmentId) {
+    const newStatus = prompt('Enter new status (Scheduled, Completed, Cancelled, No-Show):');
+    if (!newStatus) return;
+    
+    try {
+      const res = await fetch(`/api/appointments/${appointmentId}`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        await loadAppointments();
+      } else {
+        alert('Failed to update appointment status.');
+      }
+    } catch (err) {
+      console.error('Error updating appointment:', err);
+      alert('Failed to update appointment status.');
+    }
+  }
+
+  async function deleteAppointment(appointmentId) {
+    if (!confirm('Delete this appointment?')) return;
+    
+    try {
+      const res = await fetch(`/api/appointments/${appointmentId}`, {
+        method: 'DELETE'
+      });
+      if (res.status === 204) {
+        await loadAppointments();
+      } else {
+        alert('Failed to delete appointment.');
+      }
+    } catch (err) {
+      console.error('Error deleting appointment:', err);
+      alert('Failed to delete appointment.');
+    }
+  }
+
+  // ── Appointment Form Handlers ─────────────────────────────────────────────
+  addAppointmentBtn.addEventListener('click', () => {
+    addAppointmentForm.classList.remove('hidden');
+    // Set default date to today
+    document.getElementById('appointment-date').value = new Date().toISOString().split('T')[0];
+  });
+
+  cancelAppointmentBtn.addEventListener('click', () => {
+    addAppointmentForm.classList.add('hidden');
+    appointmentForm.reset();
+  });
+
+  appointmentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      customerId: currentCust.id,
+      date: document.getElementById('appointment-date').value,
+      time: document.getElementById('appointment-time').value,
+      duration: parseInt(document.getElementById('appointment-duration').value),
+      notes: document.getElementById('appointment-notes').value.trim()
+    };
+
+    try {
+      const res = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        appointmentForm.reset();
+        addAppointmentForm.classList.add('hidden');
+        await loadAppointments();
+      } else {
+        alert('Error creating appointment.');
+      }
+    } catch (err) {
+      console.error('Error creating appointment:', err);
+      alert('Failed to create appointment.');
+    }
+  });
 
   // ── Back to list ──────────────────────────────────────────────────────
   backBtn.addEventListener('click', () => {

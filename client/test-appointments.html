@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Appointment Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Appointment System Test</h1>
+  
+      <div>
+      <h2>Test API Endpoints</h2>
+      <button onclick="testDatabaseCheck()">Test Database Connection</button>
+      <button onclick="testGetAppointments()">Test Get All Appointments</button>
+      <button onclick="testCreateAppointment()">Test Create Appointment</button>
+      <button onclick="testGetNextAppointment()">Test Get Next Appointment</button>
+      <button onclick="testDebugAppointments()">Debug Customer Appointments</button>
+    </div>
+
+  <div id="results" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
+
+  <script>
+    async function testDatabaseCheck() {
+      try {
+        const response = await fetch('/api/db-check');
+        const data = await response.json();
+        document.getElementById('results').innerHTML = `
+          <h3>Database Check Response:</h3>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (error) {
+        document.getElementById('results').innerHTML = `
+          <h3>Error:</h3>
+          <pre>${error.message}</pre>
+        `;
+      }
+    }
+
+    async function testGetAppointments() {
+      try {
+        const response = await fetch('/api/appointments');
+        const data = await response.json();
+        document.getElementById('results').innerHTML = `
+          <h3>Get Appointments Response:</h3>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (error) {
+        document.getElementById('results').innerHTML = `
+          <h3>Error:</h3>
+          <pre>${error.message}</pre>
+        `;
+      }
+    }
+
+    async function testCreateAppointment() {
+      try {
+        const response = await fetch('/api/appointments', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            customerId: 1,
+            date: '2024-01-15',
+            time: '14:00',
+            duration: 60,
+            notes: 'Test appointment'
+          })
+        });
+        const data = await response.json();
+        document.getElementById('results').innerHTML = `
+          <h3>Create Appointment Response:</h3>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (error) {
+        document.getElementById('results').innerHTML = `
+          <h3>Error:</h3>
+          <pre>${error.message}</pre>
+        `;
+      }
+    }
+
+    async function testGetNextAppointment() {
+      try {
+        const response = await fetch('/api/appointments/next/1');
+        const data = await response.json();
+        document.getElementById('results').innerHTML = `
+          <h3>Get Next Appointment Response:</h3>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (error) {
+        document.getElementById('results').innerHTML = `
+          <h3>Error:</h3>
+          <pre>${error.message}</pre>
+        `;
+      }
+    }
+
+    async function testDebugAppointments() {
+      try {
+        const customerId = prompt('Enter customer ID to debug:');
+        if (!customerId) return;
+        
+        const response = await fetch(`/api/debug/appointments/${customerId}`);
+        const data = await response.json();
+        document.getElementById('results').innerHTML = `
+          <h3>Debug Appointments Response:</h3>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (error) {
+        document.getElementById('results').innerHTML = `
+          <h3>Error:</h3>
+          <pre>${error.message}</pre>
+        `;
+      }
+    }
+  </script>
+</body>
+</html> 
