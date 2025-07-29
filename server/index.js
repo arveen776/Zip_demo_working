@@ -1,10 +1,11 @@
 // server/index.js
-
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
+const session = require('express-session');
 
 // Initialize Prisma client
 const prisma = new PrismaClient();
@@ -15,13 +16,52 @@ const app = express();
 // ─── MIDDLEWARE ────────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(bodyParser.json());
+app.use(session({
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true if using HTTPS
+}));
 
 // Serve static files from the client folder
 app.use(express.static(path.join(__dirname, '../client')));
 
-// Serve root path with employee.html
+// Serve root path with login.html
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/employee.html'));
+  res.sendFile(path.join(__dirname, '../client/login.html'));
+});
+
+// Authentication middleware
+const checkAuth = (requiredRole) => {
+  return (req, res, next) => {
+    if (!req.session.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    if (requiredRole === 'manager' && req.session.user.role !== 'manager') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+  };
+};
+
+// Login endpoint
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  if (password === process.env.MANAGER_PASSWORD) {
+    req.session.user = { role: 'manager' };
+    res.json({ role: 'manager' });
+  } else if (password === process.env.EMPLOYEE_PASSWORD) {
+    req.session.user = { role: 'employee' };
+    res.json({ role: 'employee' });
+  } else {
+    res.status(401).json({ error: 'Invalid password' });
+  }
+});
+
+// Logout endpoint
+app.post('/api/logout', (req, res) => {
+  req.session.destroy();
+  res.sendStatus(200);
 });
 
 // Catch-all for direct access to HTML pages (employee, manager, customers, test-appointments)
@@ -342,7 +382,7 @@ app.get('/api/quotes/:id', async (req, res) => {
 });
 
 // Update quote label and/or status
-app.put('/api/quotes/:id', async (req, res) => {
+app.put('/api/quotes/:id', checkAuth('employee'), async (req, res) => {
   const id = Number(req.params.id);
   const { label, status } = req.body;
 

@@ -4,6 +4,32 @@
 
 // ─── THEME SWITCHER ───────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  const userRole = sessionStorage.getItem('userRole');
+  const currentPage = location.pathname.split('/').pop();
+
+  if (currentPage !== 'login.html' && !userRole) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  if (userRole === 'employee' && (currentPage === 'manager.html' || currentPage === 'customers.html')) {
+    window.location.href = 'employee.html';
+    return;
+  }
+
+  const nav = document.querySelector('.main-nav');
+  if (nav) {
+    const logoutButton = document.createElement('button');
+    logoutButton.textContent = 'Logout';
+    logoutButton.id = 'logout-btn';
+    logoutButton.addEventListener('click', async () => {
+      await fetch('/api/logout', { method: 'POST' });
+      sessionStorage.removeItem('userRole');
+      window.location.href = 'login.html';
+    });
+    nav.appendChild(logoutButton);
+  }
+
   const themeSwitcher = document.getElementById('theme-switcher');
   const currentTheme = localStorage.getItem('theme') || 'light';
 
@@ -35,7 +61,39 @@ const apiServices  = '/api/services';
 
 // script.js (only the EMPLOYEE PAGE section; keep your other page logic below unchanged)
 
-if (location.pathname.endsWith('employee.html')) {
+if (location.pathname.endsWith('login.html')) {
+  const loginForm = document.getElementById('login-form');
+  const passwordInput = document.getElementById('password');
+  const errorMessage = document.getElementById('error-message');
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = passwordInput.value;
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      if (res.ok) {
+        const { role } = await res.json();
+        sessionStorage.setItem('userRole', role);
+        if (role === 'manager') {
+          window.location.href = 'manager.html';
+        } else {
+          window.location.href = 'employee.html';
+        }
+      } else {
+        errorMessage.textContent = 'Invalid password';
+        errorMessage.style.display = 'block';
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      errorMessage.textContent = 'An error occurred. Please try again.';
+      errorMessage.style.display = 'block';
+    }
+  });
+} else if (location.pathname.endsWith('employee.html')) {
   // API endpoints (adjust as needed)
   const apiCustomers = '/api/customers';
   const apiServices  = '/api/services';
