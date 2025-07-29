@@ -47,6 +47,9 @@ const checkAuth = (requiredRole) => {
 // Login endpoint
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
+  console.log('Login attempt with password:', password);
+  console.log('Manager password:', process.env.MANAGER_PASSWORD);
+  console.log('Employee password:', process.env.EMPLOYEE_PASSWORD);
   if (password === process.env.MANAGER_PASSWORD) {
     req.session.user = { role: 'manager' };
     res.json({ role: 'manager' });
