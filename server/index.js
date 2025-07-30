@@ -6,6 +6,7 @@ const cors = require('cors');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 const session = require('express-session');
+const { sendQuoteEmail } = require('./emailService');
 
 // Initialize Prisma client
 const prisma = new PrismaClient();
@@ -108,6 +109,17 @@ app.post('/api/quotes', async (req, res) => {
       await prisma.quoteItem.create({ data: { quoteId: quote.id, serviceId: id, qty: q, lineTotal }});
     }
 
+    const finalQuote = await prisma.quote.findUnique({
+      where: { id: quote.id },
+      include: {
+        customer: true,
+        quoteItems: { include: { service: true } }
+      }
+    });
+
+    // Send the email asynchronously
+    sendQuoteEmail(finalQuote.customer, finalQuote).catch(console.error);
+
     return res.json({ id: quote.id, label: quote.label, total });
   } catch (error) {
     console.error('Error creating quote:', error);
@@ -208,9 +220,9 @@ app.get('/api/customers/:id', async (req, res) => {
 });
 app.post('/api/customers', async (req, res) => {
   try {
-    const { name, phone, address, notes } = req.body;
+    const { name, email, phone, address, notes } = req.body;
     if (!name) return res.status(400).json({ error: 'Name is required' });
-    const newCust = await prisma.customer.create({ data: { name, phone, address, notes }});
+    const newCust = await prisma.customer.create({ data: { name, email, phone, address, notes }});
     return res.status(201).json(newCust);
   } catch (err) {
     console.error('Error creating customer:', err);

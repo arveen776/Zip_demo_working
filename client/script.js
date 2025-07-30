@@ -1383,6 +1383,7 @@ async function renderQuotes() {
           <tr>
             <td>${c.id}</td>
             <td>${c.name}</td>
+            <td>${c.email || ''}</td>
             <td>${c.phone || ''}</td>
             <td>${c.address || ''}</td>
             <td>${c.notes || ''}</td>
@@ -1485,6 +1486,7 @@ async function renderQuotes() {
     e.preventDefault();
     const payload = {
       name:    document.getElementById('cust-name').value.trim(),
+      email:   document.getElementById('cust-email').value.trim(),
       phone:   document.getElementById('cust-phone').value.trim(),
       address: document.getElementById('cust-address').value.trim(),
       notes:   document.getElementById('cust-notes').value.trim()
@@ -1577,6 +1579,7 @@ async function renderQuotes() {
       // Profile display
       infoDiv.innerHTML = `
         <p><strong>Name:</strong> ${c.name}</p>
+        <p><strong>Email:</strong> ${c.email || '–'}</p>
         <p><strong>Phone:</strong> ${c.phone   || '–'}</p>
         <p><strong>Address:</strong> ${c.address|| '–'}</p>
         <p><strong>Notes:</strong> ${c.notes   || ''}</p>
@@ -1657,6 +1660,7 @@ async function renderQuotes() {
   // ── Edit profile inline ──────────────────────────────────────────────
   editBtn.addEventListener('click', () => {
     document.getElementById('edit-name').value    = currentCust.name;
+    document.getElementById('edit-email').value   = currentCust.email   || '';
     document.getElementById('edit-phone').value   = currentCust.phone   || '';
     document.getElementById('edit-address').value = currentCust.address || '';
     document.getElementById('edit-notes').value   = currentCust.notes   || '';
