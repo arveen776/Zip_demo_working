@@ -1,7 +1,7 @@
 {
   "name": "orderbook-server",
   "version": "1.0.0",
-  "main": "server/index.js",
+  "main": "index.js",
   "scripts": {
     "build": "prisma generate",
     "start": "prisma migrate deploy && node index.js"
