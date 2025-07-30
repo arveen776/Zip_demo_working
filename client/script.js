@@ -1019,8 +1019,9 @@ async function renderQuotes() {
     return acc;
   }, {});
 
-  const chartLabels = Object.keys(chartData);
-  const chartValues = Object.values(chartData);
+  const sortedChartData = Object.entries(chartData).sort((a, b) => new Date(a[0]) - new Date(b[0]));
+  const chartLabels = sortedChartData.map(entry => entry[0]);
+  const chartValues = sortedChartData.map(entry => entry[1]);
 
   if (revenueChart) {
     revenueChart.destroy();
@@ -1670,6 +1671,7 @@ async function renderQuotes() {
     e.preventDefault();
     const payload = {
       name:    document.getElementById('edit-name').value.trim(),
+      email:   document.getElementById('edit-email').value.trim(),
       phone:   document.getElementById('edit-phone').value.trim(),
       address: document.getElementById('edit-address').value.trim(),
       notes:   document.getElementById('edit-notes').value.trim()

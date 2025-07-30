@@ -219,9 +219,9 @@ app.post('/api/customers', async (req, res) => {
 });
 app.put('/api/customers/:id', async (req, res) => {
   const id = Number(req.params.id);
-  const { name, phone, address, notes } = req.body;
+  const { name, email, phone, address, notes } = req.body;
   try {
-    const cust = await prisma.customer.update({ where: { id }, data: { name, phone, address, notes }});
+    const cust = await prisma.customer.update({ where: { id }, data: { name, email, phone, address, notes }});
     return res.json(cust);
   } catch (err) {
     console.error('Error updating customer:', err);
