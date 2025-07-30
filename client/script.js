@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const nav = document.querySelector('.main-nav');
   if (nav) {
+    if (userRole === 'manager') {
+      nav.innerHTML = '<a href="customers.html">Customers</a> | <a href="employee.html">New Quote</a> | <a href="manager.html">Manager</a>';
+    } else {
+      nav.innerHTML = '<a href="employee.html">New Quote</a>';
+    }
     const logoutButton = document.createElement('button');
     logoutButton.textContent = 'Logout';
     logoutButton.id = 'logout-btn';
