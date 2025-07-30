@@ -1,4 +1,4 @@
-// -----------------------------------
+
 // client/script.js
 // -----------------------------------
 
@@ -33,6 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const themeSwitcher = document.getElementById('theme-switcher');
   const currentTheme = localStorage.getItem('theme') || 'light';
 
+  // Set active navigation link
+  const navLinks = document.querySelectorAll('.main-nav a');
+  navLinks.forEach(link => {
+    if (link.getAttribute('href') === currentPage) {
+      link.classList.add('active');
+    }
+  });
+
   document.documentElement.setAttribute('data-theme', currentTheme);
 
   if (currentTheme === 'dark') {
@@ -58,6 +66,41 @@ document.addEventListener('DOMContentLoaded', () => {
 const apiCustomers = '/api/customers';
 const apiQuotes    = '/api/quotes';
 const apiServices  = '/api/services';
+
+// ─── TOAST NOTIFICATION ───────────────────────────────────────────────────────
+function showToast(message, type = 'info') {
+  const toastContainer = document.getElementById('toast-container');
+  if (!toastContainer) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+
+  const icons = {
+    success: 'fa-check-circle',
+    error: 'fa-times-circle',
+    info: 'fa-info-circle'
+  };
+
+  toast.innerHTML = `
+    <i class="fas ${icons[type]} toast-icon"></i>
+    <span>${message}</span>
+  `;
+
+  toastContainer.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 100);
+
+  // Animate out and remove
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      toast.remove();
+    }, 500);
+  }, 3000);
+}
 
 // script.js (only the EMPLOYEE PAGE section; keep your other page logic below unchanged)
 
@@ -367,7 +410,7 @@ if (location.pathname.endsWith('login.html')) {
       notes:   document.getElementById('new-cust-notes').value.trim()
     };
     if (!payload.name) {
-      alert('Name is required.');
+      showToast('Name is required.', 'error');
       return;
     }
     try {
@@ -384,11 +427,11 @@ if (location.pathname.endsWith('login.html')) {
         custSelect.value = newCustomer.id;
         showCustomerProfile(newCustomer);
       } else {
-        alert('Error adding customer.');
+        showToast('Error adding customer.', 'error');
       }
     } catch (err) {
       console.error('Error creating customer:', err);
-      alert('Failed to create customer.');
+      showToast('Failed to create customer.', 'error');
     }
   });
 
@@ -539,11 +582,11 @@ if (location.pathname.endsWith('login.html')) {
       if (res.ok) {
         loadUpcomingAppointments();
       } else {
-        alert('Failed to update appointment status.');
+        showToast('Failed to update appointment status.', 'error');
       }
     } catch (err) {
       console.error('Error updating appointment:', err);
-      alert('Failed to update appointment status.');
+      showToast('Failed to update appointment status.', 'error');
     }
   };
 
@@ -560,11 +603,11 @@ if (location.pathname.endsWith('login.html')) {
       if (res.ok) {
         loadUpcomingAppointments();
       } else {
-        alert('Failed to cancel appointment.');
+        showToast('Failed to cancel appointment.', 'error');
       }
     } catch (err) {
       console.error('Error cancelling appointment:', err);
-      alert('Failed to cancel appointment.');
+      showToast('Failed to cancel appointment.', 'error');
     }
   };
 
@@ -1059,7 +1102,10 @@ async function renderQuotes() {
     });
 
     // Build HTML
-    quotesDiv.innerHTML = Object.entries(groups).map(([name, quotes]) => {
+    if (Object.keys(groups).length === 0) {
+      quotesDiv.innerHTML = '<div style="text-align:center; padding:2rem; font-style:italic;">No quotes found for the selected filters.</div>';
+    } else {
+      quotesDiv.innerHTML = Object.entries(groups).map(([name, quotes]) => {
       const custTotal = quotes.reduce(
         (sum,q) => sum + q.quoteItems.reduce((s,i)=>s+i.lineTotal,0),
         0
@@ -1106,6 +1152,7 @@ async function renderQuotes() {
         </section><hr/>
       `;
     }).join('');
+    }
 
     // Attach event listeners for the new buttons
     document.querySelectorAll('.view-quote-details').forEach(btn => {
@@ -1137,11 +1184,11 @@ async function renderQuotes() {
             }
             renderQuotes();
           } else {
-            alert('Failed to update quote status.');
+            showToast('Failed to update quote status.', 'error');
           }
         } catch (err) {
           console.error('Error updating quote status:', err);
-          alert('Failed to update quote status.');
+          showToast('Failed to update quote status.', 'error');
         }
       });
     });
@@ -1185,12 +1232,12 @@ async function renderQuotes() {
     const r = await fetch(apiQuotes, { method: 'DELETE' });
     if (r.status === 204) {
       await fetchQuotes();
-      alert('All quotes cleared.');
-    } else alert('Failed to clear quotes.');
+      showToast('All quotes cleared.', 'success');
+    } else showToast('Failed to clear quotes.', 'error');
+  });
   // Date range filters
   dateFromInput.addEventListener('change', renderQuotes);
   dateToInput  .addEventListener('change', renderQuotes);
-  });
 
     // Tab switching logic
   tabs.forEach(btn => {
@@ -1277,7 +1324,7 @@ async function renderQuotes() {
     const description = document.getElementById('service-desc').value.trim();
     const cost        = parseFloat(document.getElementById('service-cost').value);
     if (!name || isNaN(cost)) {
-      alert('Name and cost are required');
+      showToast('Name and cost are required', 'error');
       return;
     }
     await fetch(apiServices, {
@@ -1357,10 +1404,13 @@ async function renderQuotes() {
     );
 
     if (filtered.length === 0) {
+      const emptyMessage = filterText
+        ? `No customers match “${filterText}”`
+        : 'No customers found. Click "Add Customer" to create the first one!';
       tableBody.innerHTML = `
         <tr>
-          <td colspan="7" style="text-align:center; padding:1rem;">
-            No customers match “${filterText}”
+          <td colspan="10" style="text-align:center; padding:2rem; font-style:italic;">
+            ${emptyMessage}
           </td>
         </tr>`;
     } else {
@@ -1409,7 +1459,7 @@ async function renderQuotes() {
         if (!confirm('Delete this customer and all their quotes?')) return;
         const res = await fetch(`/api/customers/${btn.dataset.id}`, { method: 'DELETE' });
         if (res.status === 204) loadCustomers();
-        else alert('Failed to delete customer.');
+        else showToast('Failed to delete customer.', 'error');
       })
     );
   }
@@ -1493,7 +1543,7 @@ async function renderQuotes() {
       notes:   document.getElementById('cust-notes').value.trim()
     };
     if (!payload.name) {
-      alert('Name is required.');
+      showToast('Name is required.', 'error');
       return;
     }
 
@@ -1506,7 +1556,7 @@ async function renderQuotes() {
       const appointmentTime = custAppointmentTime.value;
       
       if (!appointmentDate || !appointmentTime) {
-        alert('Please fill in both appointment date and time.');
+        showToast('Please fill in both appointment date and time.', 'error');
         return;
       }
 
@@ -1527,7 +1577,7 @@ async function renderQuotes() {
       });
       
       if (!customerRes.ok) {
-        alert('Error adding customer.');
+        showToast('Error adding customer.', 'error');
         return;
       }
 
@@ -1545,12 +1595,12 @@ async function renderQuotes() {
         });
 
         if (appointmentRes.ok) {
-          alert(`Customer created successfully with appointment scheduled for ${appointmentData.date} at ${appointmentData.time}!`);
+          showToast(`Customer created successfully with appointment scheduled for ${appointmentData.date} at ${appointmentData.time}!`, 'success');
         } else {
-          alert('Customer created but failed to schedule appointment.');
+          showToast('Customer created but failed to schedule appointment.', 'error');
         }
       } else {
-        alert('Customer created successfully!');
+        showToast('Customer created successfully!', 'success');
       }
 
       // Reset form
@@ -1562,7 +1612,7 @@ async function renderQuotes() {
       await loadCustomers();
     } catch (err) {
       console.error('Error creating customer:', err);
-      alert('Error adding customer.');
+      showToast('Error adding customer.', 'error');
     }
   });
 
@@ -1642,11 +1692,11 @@ async function renderQuotes() {
               // Re-render the detail view to reflect the change
               showDetail(currentCust.id);
             } else {
-              alert('Failed to update quote status.');
+              showToast('Failed to update quote status.', 'error');
             }
           } catch (err) {
             console.error('Error updating quote status:', err);
-            alert('Failed to update quote status.');
+            showToast('Failed to update quote status.', 'error');
           }
         });
       });
@@ -1687,7 +1737,7 @@ async function renderQuotes() {
       body:    JSON.stringify(payload)
     });
     if (res.ok) showDetail(currentCust.id);
-    else alert('Error updating profile.');
+    else showToast('Error updating profile.', 'error');
   });
 
   // ── Quote detail popup ────────────────────────────────────────────────
@@ -1725,7 +1775,7 @@ async function renderQuotes() {
       body:    JSON.stringify({ label: newLabel })
     });
     if (res.ok) showDetail(currentCust.id);
-    else alert('Error updating quote label.');
+    else showToast('Error updating quote label.', 'error');
   }
 
   // ── Appointment Functions ────────────────────────────────────────────────
@@ -1797,11 +1847,11 @@ async function renderQuotes() {
       if (res.ok) {
         await loadAppointments();
       } else {
-        alert('Failed to update appointment status.');
+        showToast('Failed to update appointment status.', 'error');
       }
     } catch (err) {
       console.error('Error updating appointment:', err);
-      alert('Failed to update appointment status.');
+      showToast('Failed to update appointment status.', 'error');
     }
   }
 
@@ -1815,11 +1865,11 @@ async function renderQuotes() {
       if (res.status === 204) {
         await loadAppointments();
       } else {
-        alert('Failed to delete appointment.');
+        showToast('Failed to delete appointment.', 'error');
       }
     } catch (err) {
       console.error('Error deleting appointment:', err);
-      alert('Failed to delete appointment.');
+      showToast('Failed to delete appointment.', 'error');
     }
   }
 
@@ -1856,11 +1906,11 @@ async function renderQuotes() {
         addAppointmentForm.classList.add('hidden');
         await loadAppointments();
       } else {
-        alert('Error creating appointment.');
+        showToast('Error creating appointment.', 'error');
       }
     } catch (err) {
       console.error('Error creating appointment:', err);
-      alert('Failed to create appointment.');
+      showToast('Failed to create appointment.', 'error');
     }
   });
 
