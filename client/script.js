@@ -1153,6 +1153,7 @@ async function renderQuotes() {
     content.innerHTML = `
       <h4>Customer Profile</h4>
       <p><strong>Name:</strong> ${customer.name}</p>
+      <p><strong>Email:</strong> ${customer.email || '–'}</p>
       <p><strong>Phone:</strong> ${customer.phone || '–'}</p>
       <p><strong>Address:</strong> ${customer.address || '–'}</p>
       <p><strong>Notes:</strong> ${customer.notes || ''}</p>

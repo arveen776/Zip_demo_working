@@ -5,49 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: var(--background-color);
-    }
-    .login-container {
-      padding: 2rem;
-      background-color: var(--card-background-color);
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    .login-container h1 {
-      margin-bottom: 1.5rem;
-    }
-    .login-container input {
-      width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border-radius: 4px;
-      border: 1px solid var(--border-color);
-    }
-    .login-container button {
-      width: 100%;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 4px;
-      background-color: var(--primary-color);
-      color: white;
-      cursor: pointer;
-    }
-    .error-message {
-      color: var(--error-color);
-      margin-top: 1rem;
-    }
-  </style>
 </head>
-<body>
+<body class="login-page-body">
   <div class="login-container">
+    <i class="fas fa-lock icon"></i>
     <h1>Login</h1>
     <form id="login-form">
       <input type="password" id="password" placeholder="Enter password" required />
