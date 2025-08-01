@@ -194,6 +194,15 @@ if (location.pathname.endsWith('login.html')) {
     inpSearch.autocomplete = 'off';
     tdSearch.appendChild(inpSearch);
 
+    // description search cell
+    const tdDescSearch = document.createElement('td');
+    const inpDescSearch = document.createElement('input');
+    inpDescSearch.type = 'text';
+    inpDescSearch.className = 'service-description-search';
+    inpDescSearch.placeholder = 'Type to search…';
+    inpDescSearch.autocomplete = 'off';
+    tdDescSearch.appendChild(inpDescSearch);
+
     // select cell
     const tdSelect = document.createElement('td');
     const sel = document.createElement('select');
@@ -221,14 +230,18 @@ if (location.pathname.endsWith('login.html')) {
     });
     tdRm.appendChild(btnRm);
 
-    tr.append(tdSearch, tdSelect, tdQty, tdRm);
+    tr.append(tdSearch, tdDescSearch, tdSelect, tdQty, tdRm);
 
     // wire up live‑filter + top‑match auto‑select
-    inpSearch.addEventListener('input', () => {
-      const term = inpSearch.value.trim().toLowerCase();
-      const servicesToDisplay = term === ''
-        ? servicesList
-        : servicesList.filter(s => s.name.toLowerCase().includes(term));
+    function updateServiceList() {
+      const nameTerm = inpSearch.value.trim().toLowerCase();
+      const descTerm = inpDescSearch.value.trim().toLowerCase();
+
+      const servicesToDisplay = servicesList.filter(s => {
+        const nameMatch = s.name.toLowerCase().includes(nameTerm);
+        const descMatch = !descTerm || (s.description && s.description.toLowerCase().includes(descTerm));
+        return nameMatch && descMatch;
+      });
 
       // 1) rebuild the dropdown to only matching services
       populateServiceSelect(sel, servicesToDisplay);
@@ -236,11 +249,17 @@ if (location.pathname.endsWith('login.html')) {
       // 2) auto‑select the very first match (if any)
       if (servicesToDisplay.length > 0) {
         sel.value = String(servicesToDisplay[0].id);
+      } else {
+        sel.value = '';
       }
 
       // 3) update the running total
       updateEstimatedTotal();
-    });
+    }
+
+    inpSearch.addEventListener('input', updateServiceList);
+    inpDescSearch.addEventListener('input', updateServiceList);
+
 
     // Add event listeners for changes to update total
     sel.addEventListener('change', () => {
@@ -363,13 +382,15 @@ if (location.pathname.endsWith('login.html')) {
       
       const appointmentInfo = document.getElementById('appointment-info');
       if (appointment) {
-        const date = new Date(appointment.date).toLocaleDateString();
+        const date = new Date(appointment.date);
+        const correctedDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        const dateStr = correctedDate.toLocaleDateString();
         const time = appointment.time;
         const duration = `${appointment.duration} min`;
         const notes = appointment.notes || '';
         
         appointmentInfo.innerHTML = `
-          <p><strong>Date:</strong> ${date}</p>
+          <p><strong>Date:</strong> ${dateStr}</p>
           <p><strong>Time:</strong> ${time}</p>
           <p><strong>Duration:</strong> ${duration}</p>
           ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
@@ -459,9 +480,8 @@ if (location.pathname.endsWith('login.html')) {
       today.setHours(0, 0, 0, 0);
       
       let filteredAppointments = allAppointments.filter(apt => {
-        // Fix timezone issue by creating date in local timezone
         const aptDate = new Date(apt.date);
-        const localAptDate = new Date(aptDate.getFullYear(), aptDate.getMonth(), aptDate.getDate());
+        const localAptDate = new Date(aptDate.getUTCFullYear(), aptDate.getUTCMonth(), aptDate.getUTCDate());
         
         switch (filterValue) {
           case 'today':
@@ -499,23 +519,23 @@ if (location.pathname.endsWith('login.html')) {
       }
 
               const appointmentsHTML = filteredAppointments.map(apt => {
-          // Fix timezone issue by creating date in local timezone
           const aptDate = new Date(apt.date);
-          const localAptDate = new Date(aptDate.getFullYear(), aptDate.getMonth(), aptDate.getDate());
+          const correctedDate = new Date(aptDate.getUTCFullYear(), aptDate.getUTCMonth(), aptDate.getUTCDate());
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           
           let cardClass = 'appointment-card';
-          if (localAptDate.getTime() === today.getTime()) {
+          if (correctedDate.getTime() === today.getTime()) {
             cardClass += ' today';
-          } else if (localAptDate.getTime() === today.getTime() + 86400000) { // tomorrow
+          } else if (correctedDate.getTime() === today.getTime() + 86400000) { // tomorrow
             cardClass += ' upcoming';
           }
 
-        const dateStr = new Date(apt.date).toLocaleDateString('en-US', {
+        const dateStr = correctedDate.toLocaleDateString('en-US', {
           weekday: 'short',
           month: 'short',
-          day: 'numeric'
+          day: 'numeric',
+          timeZone: 'UTC'
         });
 
         return `
@@ -1430,9 +1450,10 @@ async function renderQuotes() {
         // Format next appointment
         let nextAppointmentText = 'None';
         if (c.nextAppointment) {
-          const date = new Date(c.nextAppointment.date).toLocaleDateString();
+          const date = new Date(c.nextAppointment.date);
+          const correctedDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
           const time = c.nextAppointment.time;
-          nextAppointmentText = `${date} at ${time}`;
+          nextAppointmentText = `${correctedDate.toLocaleDateString()} at ${time}`;
         }
         
         return `
@@ -1799,7 +1820,8 @@ async function renderQuotes() {
           </tr>`;
       } else {
         appointmentsTableBody.innerHTML = appointments.map(apt => {
-          const date = new Date(apt.date).toLocaleDateString();
+          const date = new Date(apt.date);
+          const correctedDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
           const time = apt.time;
           const duration = `${apt.duration} min`;
           const status = apt.status;
@@ -1807,7 +1829,7 @@ async function renderQuotes() {
           
           return `
             <tr>
-              <td>${date}</td>
+              <td>${correctedDate.toLocaleDateString()}</td>
               <td>${time}</td>
               <td>${duration}</td>
               <td><span class="appointment-status ${status.toLowerCase()}">${status}</span></td>

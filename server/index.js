@@ -8,6 +8,8 @@ const { PrismaClient } = require('@prisma/client');
 const session = require('express-session');
 const { sendQuoteEmail } = require('./emailService');
 
+const moment = require('moment-timezone');
+
 // Initialize Prisma client
 const prisma = new PrismaClient();
 
@@ -286,14 +288,14 @@ app.get('/api/appointments/customer/:customerId', async (req, res) => {
 app.get('/api/appointments/next/:customerId', async (req, res) => {
   const customerId = Number(req.params.customerId);
   try {
-    // Create today's date at midnight in local timezone
-    const today = new Date();
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    
+    // Get the current time in EST
+    const nowInEST = moment.tz("America/New_York");
+    const startOfTodayEST = nowInEST.startOf('day').toDate();
+
     const nextAppointment = await prisma.appointment.findFirst({
       where: { 
         customerId,
-        date: { gte: todayStart },
+        date: { gte: startOfTodayEST },
         status: { in: ['Scheduled'] }
       },
       include: { customer: true },
@@ -313,14 +315,15 @@ app.post('/api/appointments', async (req, res) => {
       return res.status(400).json({ error: 'Customer ID, date, and time are required' });
     }
 
-    // Fix timezone issue by creating date in local timezone
-    const [year, month, day] = date.split('-').map(Number);
-    const localDate = new Date(year, month - 1, day); // month is 0-indexed
-    
+    // Construct a datetime string in EST and convert to a UTC Date object
+    const dateTimeString = `${date} ${time}`;
+    const estDate = moment.tz(dateTimeString, "YYYY-MM-DD HH:mm", "America/New_York");
+    const utcDate = estDate.toDate();
+
     const appointment = await prisma.appointment.create({
       data: {
         customerId: Number(customerId),
-        date: localDate,
+        date: utcDate,
         time: time,
         duration: duration || 60,
         notes: notes || null
@@ -338,17 +341,17 @@ app.put('/api/appointments/:id', async (req, res) => {
   const id = Number(req.params.id);
   const { date, time, duration, notes, status } = req.body;
   try {
-    // Fix timezone issue by creating date in local timezone
-    let localDate = undefined;
-    if (date) {
-      const [year, month, day] = date.split('-').map(Number);
-      localDate = new Date(year, month - 1, day); // month is 0-indexed
+    let utcDate = undefined;
+    if (date && time) {
+      const dateTimeString = `${date} ${time}`;
+      const estDate = moment.tz(dateTimeString, "YYYY-MM-DD HH:mm", "America/New_York");
+      utcDate = estDate.toDate();
     }
     
     const appointment = await prisma.appointment.update({
       where: { id },
       data: {
-        date: localDate,
+        date: utcDate,
         time: time || undefined,
         duration: duration || undefined,
         notes: notes !== undefined ? notes : undefined,

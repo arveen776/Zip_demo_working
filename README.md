@@ -23,12 +23,13 @@ This is a web-based application designed to help businesses manage their custome
 - **Customer Management:** A full-featured customer relationship management (CRM) section to add, view, edit, and delete customers.
 - **Service Catalog:** Manage the list of services offered, including their names, descriptions, and costs.
 - **Analytics:** A dedicated analytics tab with charts for service frequency, quote status breakdown, top services by revenue, and quotes per customer.
+- we need to add the inventiory for the  appointment daate fethc and recivie
 
 ## Getting Started
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/your-repo-name.git
+    git clone https://github.com/your-username/your-repo-name.git 
     ```
 2.  **Install dependencies:**
     ```bash
