@@ -1240,21 +1240,24 @@ async function renderQuotes() {
               <button class="view-quote-details" data-id="${q.id}">View Customer</button>
             </div>
             <table>
-              <thead><tr><th>Service</th><th>Qty</th><th>Line Total</th><th>Duration</th></tr></thead>
+              <thead><tr><th>Service</th><th>Qty</th><th>Line Total</th></tr></thead>
               <tbody>
                 ${q.quoteItems.map(i => `
                   <tr>
                     <td>${i.service.name}</td>
                     <td>${i.qty}</td>
                     <td>${i.lineTotal.toFixed(2)}</td>
-                    <td>${duration}</td>
                   </tr>
                 `).join('')}
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="3"><strong>Subtotal</strong></td>
+                  <td colspan="2"><strong>Subtotal</strong></td>
                   <td><strong>${qTotal.toFixed(2)}</strong></td>
+                </tr>
+                <tr>
+                  <td colspan="2"><strong>Total Duration</strong></td>
+                  <td><strong>${duration}</strong></td>
                 </tr>
               </tfoot>
             </table>
