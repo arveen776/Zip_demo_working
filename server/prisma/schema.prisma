@@ -59,4 +59,6 @@ model Appointment {
   status      String    @default("Scheduled") // Scheduled, Completed, Cancelled, No-Show
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  clockIn     DateTime?
+  clockOut    DateTime?
 }

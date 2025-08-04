@@ -156,6 +156,9 @@ if (location.pathname.endsWith('login.html')) {
   const pAddress       = document.getElementById('profile-address');
   const pNotes         = document.getElementById('profile-notes');
 
+  const clockInBtn = document.getElementById('clock-in-btn');
+  const clockOutBtn = document.getElementById('clock-out-btn');
+
   // Add customer elements
   const addCustomerBtn      = document.getElementById('add-customer-btn');
   const addCustomerForm     = document.getElementById('add-customer-form');
@@ -396,9 +399,31 @@ if (location.pathname.endsWith('login.html')) {
           ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
         `;
         appointmentInfo.classList.remove('no-appointment');
+
+        clockInBtn.dataset.appointmentId = appointment.id;
+        clockOutBtn.dataset.appointmentId = appointment.id;
+
+        if (appointment.clockIn) {
+          clockInBtn.disabled = true;
+          clockInBtn.textContent = `Clocked In at ${new Date(appointment.clockIn).toLocaleTimeString()}`;
+        } else {
+          clockInBtn.disabled = false;
+          clockInBtn.textContent = 'Clock In';
+        }
+
+        if (appointment.clockOut) {
+          clockOutBtn.disabled = true;
+          clockOutBtn.textContent = `Clocked Out at ${new Date(appointment.clockOut).toLocaleTimeString()}`;
+        } else {
+          clockOutBtn.disabled = false;
+          clockOutBtn.textContent = 'Clock Out';
+        }
+
       } else {
         appointmentInfo.innerHTML = '<p>No upcoming appointments scheduled</p>';
         appointmentInfo.classList.add('no-appointment');
+        clockInBtn.style.display = 'none';
+        clockOutBtn.style.display = 'none';
       }
     } catch (err) {
       console.error('Error loading next appointment:', err);
@@ -644,6 +669,54 @@ if (location.pathname.endsWith('login.html')) {
     await loadUpcomingAppointments();
   })();
 
+  async function clockIn(appointmentId) {
+    try {
+      const res = await fetch(`/api/appointments/${appointmentId}/clockin`, { method: 'POST' });
+      if (res.ok) {
+        const appointment = await res.json();
+        clockInBtn.disabled = true;
+        clockInBtn.textContent = `Clocked In at ${new Date(appointment.clockIn).toLocaleTimeString()}`;
+        showToast('Clocked in successfully!', 'success');
+      } else {
+        showToast('Failed to clock in.', 'error');
+      }
+    } catch (err) {
+      console.error('Error clocking in:', err);
+      showToast('Failed to clock in.', 'error');
+    }
+  }
+
+  async function clockOut(appointmentId) {
+    try {
+      const res = await fetch(`/api/appointments/${appointmentId}/clockout`, { method: 'POST' });
+      if (res.ok) {
+        const appointment = await res.json();
+        clockOutBtn.disabled = true;
+        clockOutBtn.textContent = `Clocked Out at ${new Date(appointment.clockOut).toLocaleTimeString()}`;
+        showToast('Clocked out successfully!', 'success');
+      } else {
+        showToast('Failed to clock out.', 'error');
+      }
+    } catch (err) {
+      console.error('Error clocking out:', err);
+      showToast('Failed to clock out.', 'error');
+    }
+  }
+
+  clockInBtn.addEventListener('click', () => {
+    const appointmentId = clockInBtn.dataset.appointmentId;
+    if (appointmentId) {
+      clockIn(appointmentId);
+    }
+  });
+
+  clockOutBtn.addEventListener('click', () => {
+    const appointmentId = clockOutBtn.dataset.appointmentId;
+    if (appointmentId) {
+      clockOut(appointmentId);
+    }
+  });
+
   updateEstimatedTotal(); // Initial calculation
 
   // Appointment display event listeners
@@ -711,9 +784,14 @@ if (location.pathname.endsWith('login.html')) {
 
       // reset form
       if (!location.hash) {
-        customerSearch.value = '';
-        custSelect.value     = '';
-        profileDiv.classList.add('hidden');
+        // If the employee is clocked in, don't hide the customer profile
+        // so they can still clock out.
+        const isClockedIn = clockInBtn.disabled && !clockOutBtn.disabled;
+        if (!isClockedIn) {
+          customerSearch.value = '';
+          custSelect.value     = '';
+          profileDiv.classList.add('hidden');
+        }
       }
       labelInput.value = '';
       linesBody.innerHTML = '';
@@ -1020,6 +1098,8 @@ if (location.pathname.endsWith('login.html')) {
 
   // Render filtered quotes
 async function renderQuotes() {
+  const appointmentsRes = await fetch('/api/appointments');
+  const appointments = await appointmentsRes.json();
   const custId = custFilter.value;
   let filtered = custId
     ? allQuotes.filter(q => String(q.customerId) === custId)
@@ -1137,6 +1217,16 @@ async function renderQuotes() {
       );
       const htmlQuotes = quotes.map(q => {
         const qTotal = q.quoteItems.reduce((s,i)=>s+i.lineTotal,0);
+        const appointment = appointments.find(a => a.customerId === q.customerId);
+        let duration = 'N/A';
+        if (appointment && appointment.clockIn && appointment.clockOut) {
+          const clockInTime = new Date(appointment.clockIn);
+          const clockOutTime = new Date(appointment.clockOut);
+          const diff = Math.abs(clockOutTime - clockInTime);
+          const minutes = Math.floor((diff/1000)/60);
+          duration = `${minutes} minutes`;
+        }
+
         return `
           <div class="quote-card">
             <h4>Quote #${q.id} — ${q.label||'–'} — ${new Date(q.createdAt).toLocaleDateString()}</h4>
@@ -1150,19 +1240,20 @@ async function renderQuotes() {
               <button class="view-quote-details" data-id="${q.id}">View Customer</button>
             </div>
             <table>
-              <thead><tr><th>Service</th><th>Qty</th><th>Line Total</th></tr></thead>
+              <thead><tr><th>Service</th><th>Qty</th><th>Line Total</th><th>Duration</th></tr></thead>
               <tbody>
                 ${q.quoteItems.map(i => `
                   <tr>
                     <td>${i.service.name}</td>
                     <td>${i.qty}</td>
                     <td>${i.lineTotal.toFixed(2)}</td>
+                    <td>${duration}</td>
                   </tr>
                 `).join('')}
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="2"><strong>Subtotal</strong></td>
+                  <td colspan="3"><strong>Subtotal</strong></td>
                   <td><strong>${qTotal.toFixed(2)}</strong></td>
                 </tr>
               </tfoot>

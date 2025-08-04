@@ -377,6 +377,34 @@ app.delete('/api/appointments/:id', async (req, res) => {
   }
 });
 
+app.post('/api/appointments/:id/clockin', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const appointment = await prisma.appointment.update({
+      where: { id },
+      data: { clockIn: new Date() },
+    });
+    return res.json(appointment);
+  } catch (err) {
+    console.error('Error clocking in:', err);
+    return res.status(404).json({ error: 'Appointment not found' });
+  }
+});
+
+app.post('/api/appointments/:id/clockout', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const appointment = await prisma.appointment.update({
+      where: { id },
+      data: { clockOut: new Date() },
+    });
+    return res.json(appointment);
+  } catch (err) {
+    console.error('Error clocking out:', err);
+    return res.status(404).json({ error: 'Appointment not found' });
+  }
+});
+
 // ─── QUOTE DETAIL & UPDATE ────────────────────────────────────────────────────
 
 // Fetch a single quote (with its items, services, and status)
