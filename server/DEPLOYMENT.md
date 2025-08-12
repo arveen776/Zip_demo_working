@@ -3,6 +3,8 @@
 ## Problem
 The application was experiencing migration failures on Render due to a failed migration (`20250730000136_add_customer_email`) that was preventing new deployments.
 
+**Root Cause**: The migration `20250730000136_add_customer_email` exists in the production database but NOT in the local codebase. This is an "orphaned migration" - it was created during a previous deployment attempt but failed, and the migration file was never committed to the repository.
+
 ## Solution
 We've implemented a robust startup process that automatically handles failed migrations and database initialization.
 
@@ -48,6 +50,12 @@ npm start
 
 ### If you encounter migration issues:
 ```bash
+# Try to fix the orphaned migration automatically
+npm run fix-orphaned-migration
+
+# Or run the comprehensive fix script
+npm run fix-migrations
+
 # Reset database (WARNING: This will clear all data)
 npm run db:reset
 
@@ -66,12 +74,19 @@ Make sure these are set in your Render environment:
 ### Migration Still Failing?
 If you still get migration errors, you can manually resolve them:
 
-1. Connect to your database
-2. Check the `_prisma_migrations` table
-3. Mark failed migrations as applied:
+1. **Connect to your database** (use Render's database console or a PostgreSQL client)
+2. **Check the `_prisma_migrations` table** to see the failed migration
+3. **Run the SQL fix** (see `manual-fix.sql` file):
    ```sql
+   -- Option 1: Mark as resolved (if changes were applied)
    UPDATE _prisma_migrations 
    SET finished_at = NOW(), logs = 'Manually resolved' 
+   WHERE migration_name = '20250730000136_add_customer_email' 
+   AND finished_at IS NULL;
+   
+   -- Option 2: Mark as rolled back (if changes were NOT applied)
+   UPDATE _prisma_migrations 
+   SET rolled_back_at = NOW(), logs = 'Manually rolled back' 
    WHERE migration_name = '20250730000136_add_customer_email' 
    AND finished_at IS NULL;
    ```

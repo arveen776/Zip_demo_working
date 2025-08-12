@@ -5,16 +5,32 @@ async function initializeDatabase() {
   console.log('🔧 Initializing database...');
   
   try {
-    // First, try to resolve any failed migrations
-    console.log('📋 Checking for failed migrations...');
+    // First, check migration status to understand the issue
+    console.log('📋 Checking migration status...');
     try {
-      execSync('npx prisma migrate resolve --applied 20250730000136_add_customer_email', { 
-        stdio: 'inherit',
+      const migrationStatus = execSync('npx prisma migrate status', { 
+        encoding: 'utf8',
         cwd: __dirname 
       });
-      console.log('✅ Resolved failed migration');
+      console.log('Migration status:', migrationStatus);
+      
+      // If we see the failed migration, try to mark it as rolled back
+      if (migrationStatus.includes('20250730000136_add_customer_email') && migrationStatus.includes('failed')) {
+        console.log('🔄 Found failed migration, marking as rolled back...');
+        try {
+          execSync('npx prisma migrate resolve --rolled-back 20250730000136_add_customer_email', { 
+            stdio: 'inherit',
+            cwd: __dirname 
+          });
+          console.log('✅ Migration marked as rolled back');
+        } catch (resolveError) {
+          console.log('⚠️  Could not resolve migration automatically');
+          console.log('💡 This migration exists in the database but not locally');
+          console.log('💡 You may need to manually fix this in your database');
+        }
+      }
     } catch (error) {
-      console.log('ℹ️  No failed migration to resolve or already resolved');
+      console.log('ℹ️  Could not check migration status:', error.message);
     }
 
     // Check if there are any other failed migrations

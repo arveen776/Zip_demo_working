@@ -10,7 +10,8 @@
     "db:reset": "prisma migrate reset --force && prisma migrate deploy",
     "db:deploy": "prisma migrate resolve --applied 20250730000136_add_customer_email && prisma migrate deploy",
     "db:init": "node startup.js",
-    "fix-migrations": "node fix-migrations.js"
+    "fix-migrations": "node fix-migrations.js",
+    "fix-orphaned-migration": "prisma migrate resolve --rolled-back 20250730000136_add_customer_email && prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
