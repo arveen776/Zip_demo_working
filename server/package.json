@@ -5,7 +5,12 @@
   "scripts": {
     "build": "prisma generate",
     "start": "node index.js",
-    "migrate": "prisma migrate deploy"
+    "dev": "node startup.js && node index.js",
+    "migrate": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset --force && prisma migrate deploy",
+    "db:deploy": "prisma migrate resolve --applied 20250730000136_add_customer_email && prisma migrate deploy",
+    "db:init": "node startup.js",
+    "fix-migrations": "node fix-migrations.js"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",

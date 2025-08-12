@@ -7,6 +7,7 @@ const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 const session = require('express-session');
 const { sendQuoteEmail } = require('./emailService');
+const { initializeDatabase } = require('./startup');
 
 const moment = require('moment-timezone');
 
@@ -520,5 +521,17 @@ app.get('/api/debug/appointments/:customerId', async (req, res) => {
 });
 
 // ─── START SERVER ───────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+async function startServer() {
+  try {
+    // Initialize database before starting server
+    await initializeDatabase();
+    
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+  } catch (error) {
+    console.error('💥 Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
