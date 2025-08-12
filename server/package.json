@@ -11,7 +11,8 @@
     "db:deploy": "prisma migrate resolve --applied 20250730000136_add_customer_email && prisma migrate deploy",
     "db:init": "node startup.js",
     "fix-migrations": "node fix-migrations.js",
-    "fix-orphaned-migration": "prisma migrate resolve --rolled-back 20250730000136_add_customer_email && prisma migrate deploy"
+    "fix-orphaned-migration": "prisma migrate resolve --rolled-back 20250730000136_add_customer_email && prisma migrate deploy",
+    "aggressive-fix": "node aggressive-fix.js"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
