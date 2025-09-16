@@ -27,6 +27,6 @@
   },
   "devDependencies": {
     "ethereal-email": "^1.0.0",
-    "prisma": "^6.12.0"
+    "prisma": "^6.14.0"
   }
 }
