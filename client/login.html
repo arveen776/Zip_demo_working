@@ -9,15 +9,45 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="login-page-body">
-  <div class="login-container">
-    <i class="fas fa-lock icon"></i>
-    <h1>Login</h1>
-    <form id="login-form">
-      <input type="password" id="password" placeholder="Enter password" required />
-      <button type="submit">Login</button>
-    </form>
-    <p id="error-message" class="error-message" style="display: none;"></p>
+  <div class="login-banner" role="banner">
+    <span class="brand-wordmark">MAGNUM ELECTRIC</span>
   </div>
+  <main class="login-shell" aria-labelledby="app-title">
+    <section class="brand-panel">
+      <div class="brand-inner">
+        <div class="brand-logo" aria-hidden="true">M</div>
+        <h1 id="app-title" class="brand-title">Magnum Electric</h1>
+        <p class="brand-subtitle">Operations Portal</p>
+        <p class="brand-copy">
+          Modern CRM, quoting, and scheduling for residential and commercial electrical services in Florida.
+        </p>
+        <ul class="brand-features" aria-label="Key capabilities">
+          <li><i class="fas fa-file-invoice-dollar"></i> Create professional quotes in seconds</li>
+          <li><i class="fas fa-user-friends"></i> Manage customers and service history</li>
+          <li><i class="fas fa-tools"></i> Maintain your service catalog</li>
+          <li><i class="fas fa-calendar-check"></i> Schedule appointments and track time</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="login-panel" aria-label="Secure sign in">
+      <div class="login-container" role="form">
+        <i class="fas fa-lock icon" aria-hidden="true"></i>
+        <h2 class="login-title">Sign in to continue</h2>
+        <form id="login-form">
+          <label for="password" class="visually-hidden">Password</label>
+          <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" required />
+          <button type="submit">Login</button>
+        </form>
+        <p id="error-message" class="error-message" style="display: none;"></p>
+
+        <div class="login-help">
+          <p>Manager and Employee access only. For assistance, contact your administrator.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
   <script src="script.js"></script>
 </body>
 </html>

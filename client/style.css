@@ -357,9 +357,7 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   margin-right: 0.5rem;
 }
 
-.submit-quote-btn {
-  /* No specific styles needed beyond default button styles */
-}
+
 
 .quote-result-display {
   margin-top: 1rem;
@@ -629,6 +627,72 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   background: linear-gradient(135deg, var(--color-bg), var(--color-secondary));
 }
 
+.login-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: #36c035; /* Magnum green */
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.brand-wordmark {
+  color: #0b2b4b;
+  font-weight: 800;
+  letter-spacing: 0.25rem;
+}
+
+.login-shell { margin-top: 64px; }
+
+.login-shell {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0;
+  width: 100%;
+  max-width: 1100px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+}
+
+.brand-panel {
+  background: linear-gradient(135deg, #0a3a64, #0f5a9c);
+  color: #e8f4ff;
+  display: flex;
+  align-items: stretch;
+}
+.brand-inner {
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.brand-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.5rem;
+  box-shadow: 0 6px 18px rgba(34, 197, 94, 0.35);
+}
+.brand-title { color: #e8f4ff; margin: 0.25rem 0 0; }
+.brand-subtitle { color: #b9e1ff; font-weight: 600; margin-top: -0.25rem; }
+.brand-copy { color: #d4ecff; margin-top: 0.5rem; }
+.brand-features { list-style: none; margin-top: 1rem; display: grid; gap: 0.5rem; }
+.brand-features li { display: flex; align-items: center; gap: 0.5rem; color: #d4ecff; }
+.brand-features i { color: #9ae6b4; }
+
+.login-panel { display: flex; align-items: center; justify-content: center; padding: 2rem; }
 .login-container {
   padding: 3rem;
   background-color: var(--color-surface);
@@ -655,6 +719,9 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
     color: var(--color-primary);
     margin-bottom: 1rem;
 }
+
+.login-title { margin-bottom: 1.25rem; color: var(--color-secondary); }
+.visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; }
 
 .login-container input[type="password"] {
   width: 100%;
@@ -698,7 +765,13 @@ tfoot tr { background-color: var(--color-surface); font-weight: bold; }
   min-height: 1.5rem; /* Reserve space to prevent layout shift */
 }
 
+.login-help { margin-top: 0.75rem; color: var(--color-text-light); font-size: 0.9rem; }
+
 /* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .login-shell { grid-template-columns: 1fr; }
+  .brand-panel { display: none; }
+}
 
 /* ─── TOAST NOTIFICATIONS ──────────────────────────────────────────────────── */
 .toast-container {
